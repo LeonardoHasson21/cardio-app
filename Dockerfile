@@ -10,6 +10,9 @@ COPY mvnw.cmd .
 COPY .mvn .mvn
 COPY src src
 
+# Dar permisos de ejecución al mvnw
+RUN chmod +x ./mvnw
+
 # Ejecutar Maven build
 RUN ./mvnw clean package -DskipTests
 
