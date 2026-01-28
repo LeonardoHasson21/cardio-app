@@ -10,7 +10,7 @@ public class CordiologicoApplication {
 
     public static void main(String[] args) {
 
-        TimeZone.setDefault(TimeZone.getTimeZone("UTC"));
+        TimeZone.setDefault(TimeZone.getTimeZone("America/Buenos_Aires"));
         
         SpringApplication.run(CordiologicoApplication.class, args);
     }
