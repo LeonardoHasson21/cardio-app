@@ -8,8 +8,4 @@ COPY target/cordio-0.0.1-SNAPSHOT.jar app.jar
 EXPOSE 8080
 
 # Comando para ejecutar la aplicación
-# La variable DATABASE_URL viene de Railway sin "jdbc:", así que la añadimos aquí
-ENTRYPOINT ["java", "-jar", "app.jar", \
-    "--spring.datasource.url=${DATABASE_URL:jdbc:postgresql://localhost:5432/railway}", \
-    "--spring.datasource.username=${DATABASE_USER:postgres}", \
-    "--spring.datasource.password=${DATABASE_PASSWORD:password}"]
+CMD ["sh", "-c", "java -jar app.jar --spring.datasource.url=${DATABASE_URL:-jdbc:postgresql://localhost:5432/railway} --spring.datasource.username=${DATABASE_USER:-postgres} --spring.datasource.password=${DATABASE_PASSWORD:-password}"]
