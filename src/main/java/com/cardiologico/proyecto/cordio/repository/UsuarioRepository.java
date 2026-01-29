@@ -1,0 +1,11 @@
+package com.cardiologico.proyecto.cordio.repository;
+
+import java.util.Optional;
+
+import org.springframework.data.jpa.repository.JpaRepository;
+
+import com.cardiologico.proyecto.cordio.model.Usuario;
+
+public interface UsuarioRepository extends JpaRepository<Usuario, Long> {
+    Optional<Usuario> findByUsername(String username);
+}

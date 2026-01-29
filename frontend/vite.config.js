@@ -5,7 +5,7 @@ import react from '@vitejs/plugin-react'
 export default defineConfig({
   plugins: [react()],
   preview: {
-    host: true, // Esto permite que escuche en todos los puertos (vital para la nube)
-    allowedHosts: ['cozy-consideration-production.up.railway.app'] // <--- ¡AQUÍ ESTÁ LA CLAVE!
+    host: true,
+    allowedHosts: ['cozy-consideration-production.up.railway.app']
   }
 })
