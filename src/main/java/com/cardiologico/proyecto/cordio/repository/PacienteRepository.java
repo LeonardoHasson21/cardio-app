@@ -1,13 +1,21 @@
 package com.cardiologico.proyecto.cordio.repository;
 
-import org.springframework.stereotype.Repository;
+import java.util.List;
+
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.stereotype.Repository;
+
 import com.cardiologico.proyecto.cordio.model.Paciente;
-import java.util.Optional;
+
 
 @Repository
 public interface PacienteRepository extends JpaRepository<Paciente, Long> {
-    Optional<Paciente> findByDni(String dni);
+// Buscar pacientes de un médico específico
+    List<Paciente> findByMedicoId(Long medicoId);
 
-    boolean existsByDni(String dni);
+    // Buscar por nombre PERO solo dentro de mis pacientes (Buscador Seguro)
+    List<Paciente> findByMedicoIdAndApellidoContainingIgnoreCase(Long medicoId, String apellido);
+    
+    // Buscar por nombre global (Para Admin)
+    List<Paciente> findByApellidoContainingIgnoreCase(String apellido);
 }

@@ -6,6 +6,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import com.cardiologico.proyecto.cordio.config.JwtService;
+import com.cardiologico.proyecto.cordio.model.Role;
 import com.cardiologico.proyecto.cordio.model.Usuario;
 import com.cardiologico.proyecto.cordio.repository.UsuarioRepository;
 
@@ -33,6 +34,7 @@ public class AuthService {
         Usuario user = Usuario.builder()
             .username(request.getUsername())
             .password(passwordEncoder.encode(request.getPassword()))
+            .role(Role.MEDICO)
             .build();
         
         usuarioRepository.save(user);
