@@ -24,9 +24,9 @@ import com.cardiologico.proyecto.cordio.model.Usuario;
 import com.cardiologico.proyecto.cordio.repository.PacienteRepository;
 import com.cardiologico.proyecto.cordio.repository.UsuarioRepository;
 
-@RestController 
-@RequestMapping("/api/pacientes") 
-@CrossOrigin(origins = "*") 
+@RestController
+@RequestMapping("/api/pacientes")
+@CrossOrigin(origins = "*")
 public class HistoriaClinicaController {
 
     @Autowired
@@ -48,9 +48,9 @@ public class HistoriaClinicaController {
         Usuario usuario = getUsuarioActual();
 
         if (usuario.getRole() == Role.ADMIN) {
-            return pacienteRepository.findAll(); // Admin ve todo
+            return List.of(); // <--- EL ADMIN VE LISTA VACÍA
         } else {
-            return pacienteRepository.findByMedicoId(usuario.getId()); // Médico ve solo lo suyo
+            return pacienteRepository.findByMedicoId(usuario.getId());
         }
     }
 
@@ -72,7 +72,7 @@ public class HistoriaClinicaController {
         paciente.setMedico(usuario); // ¡Aquí se firma la propiedad!
         return pacienteRepository.save(paciente);
     }
-    
+
     // 4. PUT: Editar Paciente (Con seguridad de propiedad)
     @PutMapping("/{id}")
     public ResponseEntity<Paciente> editarPaciente(@PathVariable Long id, @RequestBody Paciente nuevosDatos) {
@@ -82,11 +82,9 @@ public class HistoriaClinicaController {
             if (usuario.getRole() != Role.ADMIN && !paciente.getMedico().getId().equals(usuario.getId())) {
                 return new ResponseEntity<Paciente>(HttpStatus.FORBIDDEN);
             }
-            // Actualizamos datos
             paciente.setNombre(nuevosDatos.getNombre());
             paciente.setApellido(nuevosDatos.getApellido());
             paciente.setDni(nuevosDatos.getDni());
-            // (Agrega aquí si tienes más campos)
             return ResponseEntity.ok(pacienteRepository.save(paciente));
         }).orElse(new ResponseEntity<>(HttpStatus.NOT_FOUND));
     }
@@ -96,7 +94,6 @@ public class HistoriaClinicaController {
     public ResponseEntity<Object> eliminarPaciente(@PathVariable Long id) {
         Usuario usuario = getUsuarioActual();
         return pacienteRepository.findById(id).map(paciente -> {
-            // Seguridad: Solo el dueño o Admin pueden borrar
             if (usuario.getRole() != Role.ADMIN && !paciente.getMedico().getId().equals(usuario.getId())) {
                 return new ResponseEntity<Object>(HttpStatus.FORBIDDEN);
             }
@@ -104,13 +101,13 @@ public class HistoriaClinicaController {
             return ResponseEntity.noContent().build();
         }).orElse(new ResponseEntity<>(HttpStatus.NOT_FOUND));
     }
-    
+
     // 6. GET: Buscar por ID individual
     @GetMapping("/{id}")
     public ResponseEntity<Paciente> obtenerPorId(@PathVariable Long id) {
         Usuario usuario = getUsuarioActual();
         return pacienteRepository.findById(id).map(paciente -> {
-             if (usuario.getRole() != Role.ADMIN && !paciente.getMedico().getId().equals(usuario.getId())) {
+            if (usuario.getRole() != Role.ADMIN && !paciente.getMedico().getId().equals(usuario.getId())) {
                 return new ResponseEntity<Paciente>(HttpStatus.FORBIDDEN);
             }
             return ResponseEntity.ok(paciente);

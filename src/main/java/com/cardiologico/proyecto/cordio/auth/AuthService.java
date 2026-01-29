@@ -27,7 +27,7 @@ public class AuthService {
         );
         Usuario user = usuarioRepository.findByUsername(request.getUsername()).orElseThrow();
         String token = jwtService.getToken(user);
-        return AuthResponse.builder().token(token).build();
+        return AuthResponse.builder().token(token).role(user.getRole()).build();
     }
 
     public AuthResponse register(RegisterRequest request) {
@@ -40,6 +40,6 @@ public class AuthService {
         usuarioRepository.save(user);
         
         String token = jwtService.getToken(user);
-        return AuthResponse.builder().token(token).build();
+        return AuthResponse.builder().token(token).role(user.getRole()).build();
     }
 }

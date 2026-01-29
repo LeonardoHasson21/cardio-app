@@ -4,106 +4,136 @@ import {
   ChakraProvider, Box, Button, Input, VStack, Text, Heading, 
   Card, CardBody, Stack, Divider, Modal, ModalOverlay, 
   ModalContent, ModalHeader, ModalBody, ModalCloseButton, 
-  useDisclosure, Textarea, Badge, Container, FormControl, FormLabel
+  useDisclosure, Textarea, Badge, Container, FormControl, FormLabel,
+  Table, Thead, Tbody, Tr, Th, Td, IconButton, useToast
 } from '@chakra-ui/react'
+import { DeleteIcon } from '@chakra-ui/icons'
 
-// TU URL REAL DE RAILWAY
+// TU URL DE RAILWAY
 const API_URL = 'https://cardio-app-production.up.railway.app/api';
 
 function App() {
-  // --- ESTADOS DE SEGURIDAD ---
-  // Intentamos leer el token de la memoria al iniciar
+  const toast = useToast()
+  
+  // ESTADOS DE SEGURIDAD
   const [token, setToken] = useState(localStorage.getItem('jwt_token')); 
+  // Leemos el rol guardado, si no existe asumimos null
+  const [role, setRole] = useState(localStorage.getItem('user_role')); 
+  
   const [loginData, setLoginData] = useState({ username: '', password: '' });
 
-  // --- ESTADOS DEL SISTEMA MÉDICO ---
+  // ESTADOS MEDICO (Pacientes)
   const [pacientes, setPacientes] = useState([])
   const [nuevoPaciente, setNuevoPaciente] = useState({ nombre: '', apellido: '', dni: '' })
   const [pacienteSeleccionado, setPacienteSeleccionado] = useState(null)
   const [consultas, setConsultas] = useState([])
   const [nuevaConsulta, setNuevaConsulta] = useState({ motivo: '', diagnostico: '', tratamiento: '' })
   
+  // ESTADOS ADMIN (Medicos)
+  const [listaMedicos, setListaMedicos] = useState([])
+
   const { isOpen, onOpen, onClose } = useDisclosure()
 
-  // --- HELPER: CABECERAS CON TOKEN ---
-  // Esto crea el "pase de seguridad" para cada petición
-  const getConfig = () => ({
-    headers: { Authorization: `Bearer ${token}` }
-  });
+  const getConfig = () => ({ headers: { Authorization: `Bearer ${token}` } });
 
-  // --- FUNCIÓN DE LOGIN ---
+  // --- LOGIN ---
   const handleLogin = async () => {
     try {
-      // 1. Pedimos el token al backend (Esta ruta es PUBLICA)
       const res = await axios.post(`${API_URL}/auth/login`, loginData);
       const newToken = res.data.token;
-      
-      // 2. Guardamos el token en memoria y en el navegador
+      const userRole = res.data.role; // Ahora el backend nos manda el ROL
+
       setToken(newToken);
+      setRole(userRole);
+      
       localStorage.setItem('jwt_token', newToken);
-      alert("¡Bienvenido Doctor!");
+      localStorage.setItem('user_role', userRole);
+      
+      toast({ title: `Bienvenido ${userRole}`, status: 'success' })
     } catch (error) {
-      alert("Error: Usuario o contraseña incorrectos");
-      console.error(error);
+      toast({ title: 'Error de credenciales', status: 'error' })
     }
   }
 
   const cerrarSesion = () => {
     setToken(null);
+    setRole(null);
     localStorage.removeItem('jwt_token');
+    localStorage.removeItem('user_role');
     setPacientes([]);
+    setListaMedicos([]);
   }
 
-  // --- CARGAR PACIENTES ---
+  // --- EFECTOS DE CARGA ---
+  useEffect(() => {
+    if (token && role === 'MEDICO') cargarPacientes();
+    if (token && role === 'ADMIN') cargarMedicos();
+  }, [token, role])
+
+  // ================= FUNCIONES MEDICO =================
   const cargarPacientes = async () => {
-    if (!token) return; // Si no hay token, no intentamos cargar nada
     try {
-      // AHORA ENVIAMOS EL CONFIG (TOKEN) EN LA PETICIÓN
       const res = await axios.get(`${API_URL}/pacientes`, getConfig())
       setPacientes(res.data)
-    } catch (error) { 
-      console.error("Error cargando pacientes", error);
-      if(error.response?.status === 403) cerrarSesion(); // Si el token venció, salimos
-    }
+    } catch (error) { if(error.response?.status === 403) cerrarSesion() }
   }
 
-  // Recargar pacientes cuando obtenemos el token
-  useEffect(() => { cargarPacientes() }, [token])
-
-  // --- GUARDAR PACIENTE ---
   const guardarPaciente = async () => {
     try {
       await axios.post(`${API_URL}/pacientes`, nuevoPaciente, getConfig())
-      alert("Paciente guardado")
+      toast({ title: 'Paciente guardado', status: 'success' })
       setNuevoPaciente({ nombre: '', apellido: '', dni: '' })
       cargarPacientes()
-    } catch (error) { alert("Error al guardar paciente") }
+    } catch (error) { toast({ title: 'Error', status: 'error' }) }
   }
 
-  // --- ABRIR HISTORIA ---
+  const eliminarPaciente = async (id) => {
+    if(!window.confirm("¿Seguro que quieres eliminar este paciente?")) return;
+    try {
+      await axios.delete(`${API_URL}/pacientes/${id}`, getConfig())
+      toast({ title: 'Paciente eliminado', status: 'info' })
+      cargarPacientes()
+    } catch (error) { toast({ title: 'No puedes eliminar este paciente', status: 'error' }) }
+  }
+
   const abrirHistoria = async (paciente) => {
     setPacienteSeleccionado(paciente)
     try {
       const res = await axios.get(`${API_URL}/consultas/paciente/${paciente.id}`, getConfig())
       setConsultas(res.data)
       onOpen()
-    } catch (error) { console.error("Error cargando historia", error) }
+    } catch (error) {}
   }
 
-  // --- GUARDAR CONSULTA ---
   const guardarConsulta = async () => {
     if (!pacienteSeleccionado) return;
     try {
       await axios.post(`${API_URL}/consultas/${pacienteSeleccionado.id}`, nuevaConsulta, getConfig())
-      alert("Evolución guardada")
       setNuevaConsulta({ motivo: '', diagnostico: '', tratamiento: '' })
-      
       const res = await axios.get(`${API_URL}/consultas/paciente/${pacienteSeleccionado.id}`, getConfig())
       setConsultas(res.data)
-    } catch (error) { alert("Error guardando consulta") }
+    } catch (error) { alert("Error") }
   }
 
-  // --- VISTA: SI NO HAY TOKEN, MOSTRAMOS LOGIN ---
+  // ================= FUNCIONES ADMIN =================
+  const cargarMedicos = async () => {
+    try {
+      const res = await axios.get(`${API_URL}/admin/medicos`, getConfig())
+      setListaMedicos(res.data)
+    } catch (error) { console.error(error) }
+  }
+
+  const eliminarMedico = async (id) => {
+    if(!window.confirm("¡ATENCIÓN! Si eliminas al médico, se borrarán TODOS sus pacientes. ¿Confirmar?")) return;
+    try {
+      await axios.delete(`${API_URL}/admin/medicos/${id}`, getConfig())
+      toast({ title: 'Médico eliminado', status: 'warning' })
+      cargarMedicos()
+    } catch (error) { toast({ title: 'Error eliminando médico', status: 'error' }) }
+  }
+
+
+  // --- VISTA LOGIN ---
   if (!token) {
     return (
       <ChakraProvider>
@@ -111,22 +141,14 @@ function App() {
           <Card w="100%" bg="white" boxShadow="lg">
             <CardBody>
               <VStack spacing={4}>
-                <Heading size="md" color="blue.600">Acceso Médico</Heading>
-                <Text fontSize="sm" color="gray.500">Sistema Seguro Cordio</Text>
+                <Heading size="md" color="blue.600">Acceso Sistema</Heading>
                 <FormControl>
                   <FormLabel>Email</FormLabel>
-                  <Input 
-                    placeholder="medico@gmail.com" 
-                    onChange={(e) => setLoginData({...loginData, username: e.target.value})}
-                  />
+                  <Input onChange={(e) => setLoginData({...loginData, username: e.target.value})} />
                 </FormControl>
                 <FormControl>
                   <FormLabel>Contraseña</FormLabel>
-                  <Input 
-                    type="password" 
-                    placeholder="••••••" 
-                    onChange={(e) => setLoginData({...loginData, password: e.target.value})}
-                  />
+                  <Input type="password" onChange={(e) => setLoginData({...loginData, password: e.target.value})} />
                 </FormControl>
                 <Button colorScheme="blue" w="full" onClick={handleLogin}>Ingresar</Button>
               </VStack>
@@ -137,30 +159,67 @@ function App() {
     );
   }
 
-  // --- VISTA: SI HAY TOKEN, MOSTRAMOS EL SISTEMA ---
+  // --- VISTA ADMIN (PANEL DE MEDICOS) ---
+  if (role === 'ADMIN') {
+    return (
+        <ChakraProvider>
+            <Box p={8} maxW="1000px" mx="auto">
+                <Stack direction="row" justifyContent="space-between" mb={6}>
+                    <Heading color="purple.600">🛡️ Panel de Administrador</Heading>
+                    <Button colorScheme="red" variant="outline" size="sm" onClick={cerrarSesion}>Salir</Button>
+                </Stack>
+                
+                <Card variant="outline">
+                    <CardBody>
+                        <Heading size="md" mb={4}>Gestión de Médicos</Heading>
+                        <Table variant="simple">
+                            <Thead>
+                                <Tr><Th>ID</Th><Th>Email</Th><Th>Rol</Th><Th>Acción</Th></Tr>
+                            </Thead>
+                            <Tbody>
+                                {listaMedicos.map(medico => (
+                                    <Tr key={medico.id}>
+                                        <Td>{medico.id}</Td>
+                                        <Td fontWeight="bold">{medico.username}</Td>
+                                        <Td><Badge colorScheme="purple">{medico.role}</Badge></Td>
+                                        <Td>
+                                            <IconButton aria-label="Borrar" icon={<DeleteIcon />} colorScheme="red" size="sm" 
+                                                onClick={() => eliminarMedico(medico.id)} 
+                                            />
+                                        </Td>
+                                    </Tr>
+                                ))}
+                            </Tbody>
+                        </Table>
+                    </CardBody>
+                </Card>
+            </Box>
+        </ChakraProvider>
+    )
+  }
+
+  // --- VISTA MEDICO (PANEL DE PACIENTES) ---
   return (
     <ChakraProvider>
       <Box p={8} maxW="1000px" mx="auto">
         <Stack direction="row" justifyContent="space-between" mb={6}>
-          <Heading textAlign="center">🏥 Sistema Cardiológico</Heading>
+          <Heading color="blue.600">🏥 Consultorio Médico</Heading>
           <Button colorScheme="red" variant="outline" size="sm" onClick={cerrarSesion}>Cerrar Sesión</Button>
         </Stack>
 
-        {/* FORMULARIO NUEVO PACIENTE */}
         <Card mb={8} bg="gray.50">
           <CardBody>
-            <Heading size="md" mb={4}>Nuevo Ingreso</Heading>
+            <Heading size="md" mb={4}>Nuevo Paciente</Heading>
             <Stack direction="row" spacing={4}>
-              <Input placeholder="Nombre" bg="white" value={nuevoPaciente.nombre} onChange={(e) => setNuevoPaciente({...nuevoPaciente, nombre: e.target.value})} />
-              <Input placeholder="Apellido" bg="white" value={nuevoPaciente.apellido} onChange={(e) => setNuevoPaciente({...nuevoPaciente, apellido: e.target.value})} />
-              <Input placeholder="DNI" bg="white" value={nuevoPaciente.dni} onChange={(e) => setNuevoPaciente({...nuevoPaciente, dni: e.target.value})} />
+              <Input placeholder="Nombre" bg="white" onChange={(e) => setNuevoPaciente({...nuevoPaciente, nombre: e.target.value})} />
+              <Input placeholder="Apellido" bg="white" onChange={(e) => setNuevoPaciente({...nuevoPaciente, apellido: e.target.value})} />
+              <Input placeholder="DNI" bg="white" onChange={(e) => setNuevoPaciente({...nuevoPaciente, dni: e.target.value})} />
               <Button colorScheme="blue" onClick={guardarPaciente}>Registrar</Button>
             </Stack>
           </CardBody>
         </Card>
 
-        {/* LISTA DE PACIENTES */}
-        <Heading size="md" mb={4}>Pacientes en Sistema</Heading>
+        <Heading size="md" mb={4}>Mis Pacientes</Heading>
         <VStack spacing={4} align="stretch">
           {pacientes.map(p => (
             <Card key={p.id} variant="outline">
@@ -169,49 +228,39 @@ function App() {
                   <Heading size="sm">{p.apellido}, {p.nombre}</Heading>
                   <Text fontSize="sm" color="gray.600">DNI: {p.dni}</Text>
                 </Box>
-                <Button colorScheme="teal" size="sm" onClick={() => abrirHistoria(p)}>
-                  📂 Ver Historia Clínica
-                </Button>
+                <Stack direction="row">
+                    <Button colorScheme="teal" size="sm" onClick={() => abrirHistoria(p)}>📂 Historia</Button>
+                    <IconButton icon={<DeleteIcon/>} colorScheme="red" size="sm" variant="ghost" onClick={() => eliminarPaciente(p.id)} />
+                </Stack>
               </CardBody>
             </Card>
           ))}
         </VStack>
 
-        {/* MODAL DE HISTORIA CLÍNICA */}
         <Modal isOpen={isOpen} onClose={onClose} size="xl">
           <ModalOverlay />
           <ModalContent>
             <ModalHeader>Historia Clínica: {pacienteSeleccionado?.apellido}</ModalHeader>
             <ModalCloseButton />
             <ModalBody>
-              
               <Box bg="blue.50" p={4} borderRadius="md" mb={6}>
-                <Text fontWeight="bold" mb={2}>Nueva Evolución (Hoy)</Text>
+                <Text fontWeight="bold" mb={2}>Nueva Evolución</Text>
                 <VStack spacing={3}>
-                  <Input placeholder="Motivo de consulta" bg="white" value={nuevaConsulta.motivo} onChange={(e)=>setNuevaConsulta({...nuevaConsulta, motivo: e.target.value})} />
-                  <Input placeholder="Diagnóstico Presuntivo" bg="white" value={nuevaConsulta.diagnostico} onChange={(e)=>setNuevaConsulta({...nuevaConsulta, diagnostico: e.target.value})} />
-                  <Textarea placeholder="Tratamiento / Observaciones" bg="white" value={nuevaConsulta.tratamiento} onChange={(e)=>setNuevaConsulta({...nuevaConsulta, tratamiento: e.target.value})} />
-                  <Button colorScheme="blue" width="full" onClick={guardarConsulta}>Guardar Evolución</Button>
+                  <Input placeholder="Motivo" bg="white" value={nuevaConsulta.motivo} onChange={(e)=>setNuevaConsulta({...nuevaConsulta, motivo: e.target.value})} />
+                  <Input placeholder="Diagnóstico" bg="white" value={nuevaConsulta.diagnostico} onChange={(e)=>setNuevaConsulta({...nuevaConsulta, diagnostico: e.target.value})} />
+                  <Textarea placeholder="Tratamiento" bg="white" value={nuevaConsulta.tratamiento} onChange={(e)=>setNuevaConsulta({...nuevaConsulta, tratamiento: e.target.value})} />
+                  <Button colorScheme="blue" width="full" onClick={guardarConsulta}>Guardar</Button>
                 </VStack>
               </Box>
-
               <Divider mb={4} />
-
-              <Heading size="sm" mb={4}>Evoluciones Anteriores</Heading>
-              {consultas.length === 0 ? <Text>Sin antecedentes cargados.</Text> : (
-                <VStack spacing={3} align="stretch">
-                  {consultas.map(c => (
-                    <Box key={c.id} p={3} borderWidth="1px" borderRadius="md">
-                      <Stack direction="row" justify="space-between">
-                        <Badge colorScheme="green">{c.fecha}</Badge>
-                        <Text fontWeight="bold">{c.motivo}</Text>
-                      </Stack>
-                      <Text mt={2} fontSize="sm"><strong>Dx:</strong> {c.diagnostico}</Text>
-                      <Text fontSize="sm"><strong>Tx:</strong> {c.tratamiento}</Text>
-                    </Box>
-                  ))}
-                </VStack>
-              )}
+              <Heading size="sm" mb={4}>Historial</Heading>
+              {consultas.map(c => (
+                 <Box key={c.id} p={3} borderWidth="1px" borderRadius="md" mb={2}>
+                    <Badge colorScheme="green">{c.fecha}</Badge>
+                    <Text fontWeight="bold">{c.motivo}</Text>
+                    <Text fontSize="sm">Dx: {c.diagnostico}</Text>
+                 </Box>
+              ))}
             </ModalBody>
           </ModalContent>
         </Modal>
