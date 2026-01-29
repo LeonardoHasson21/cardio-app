@@ -7,6 +7,9 @@ import {
   useDisclosure, Textarea, Badge 
 } from '@chakra-ui/react'
 
+// TU URL REAL DE RAILWAY (Backend)
+const API_URL = 'https://cardio-app-production.up.railway.app/api';
+
 function App() {
   // Estados para Pacientes
   const [pacientes, setPacientes] = useState([])
@@ -23,7 +26,8 @@ function App() {
   // --- CARGA INICIAL ---
   const cargarPacientes = async () => {
     try {
-      const res = await axios.get('http://localhost:8081/api/pacientes')
+      // CAMBIO 1: Usar la URL de la nube
+      const res = await axios.get(`${API_URL}/pacientes`)
       setPacientes(res.data)
     } catch (error) { console.error("Error cargando pacientes", error) }
   }
@@ -33,7 +37,8 @@ function App() {
   // --- GUARDAR PACIENTE ---
   const guardarPaciente = async () => {
     try {
-      await axios.post('http://localhost:8081/api/pacientes', nuevoPaciente)
+      // CAMBIO 2: Usar la URL de la nube
+      await axios.post(`${API_URL}/pacientes`, nuevoPaciente)
       alert("Paciente guardado")
       setNuevoPaciente({ nombre: '', apellido: '', dni: '' })
       cargarPacientes()
@@ -44,9 +49,8 @@ function App() {
   const abrirHistoria = async (paciente) => {
     setPacienteSeleccionado(paciente)
     try {
-      // 1. Cargamos las consultas de ESTE paciente
-      // Nota: Aunque el paciente ya trae las consultas en el array, es buena práctica refrescarlas
-      const res = await axios.get(`http://localhost:8081/api/consultas/paciente/${paciente.id}`)
+      // CAMBIO 3: Usar la URL de la nube
+      const res = await axios.get(`${API_URL}/consultas/paciente/${paciente.id}`)
       setConsultas(res.data)
       onOpen() // Abrimos la ventana
     } catch (error) { console.error("Error cargando historia", error) }
@@ -56,11 +60,13 @@ function App() {
   const guardarConsulta = async () => {
     if (!pacienteSeleccionado) return;
     try {
-      await axios.post(`http://localhost:8081/api/consultas/${pacienteSeleccionado.id}`, nuevaConsulta)
+      // CAMBIO 4: Usar la URL de la nube
+      await axios.post(`${API_URL}/consultas/${pacienteSeleccionado.id}`, nuevaConsulta)
       alert("Evolución guardada")
       setNuevaConsulta({ motivo: '', diagnostico: '', tratamiento: '' })
-      // Recargamos las consultas para ver la nueva
-      const res = await axios.get(`http://localhost:8081/api/consultas/paciente/${pacienteSeleccionado.id}`)
+      
+      // CAMBIO 5: Recargamos las consultas para ver la nueva
+      const res = await axios.get(`${API_URL}/consultas/paciente/${pacienteSeleccionado.id}`)
       setConsultas(res.data)
     } catch (error) { alert("Error guardando consulta") }
   }
