@@ -4,77 +4,147 @@ import {
   ChakraProvider, Box, Button, Input, VStack, Text, Heading, 
   Card, CardBody, Stack, Divider, Modal, ModalOverlay, 
   ModalContent, ModalHeader, ModalBody, ModalCloseButton, 
-  useDisclosure, Textarea, Badge 
+  useDisclosure, Textarea, Badge, Container, FormControl, FormLabel
 } from '@chakra-ui/react'
 
-// TU URL REAL DE RAILWAY (Backend)
+// TU URL REAL DE RAILWAY
 const API_URL = 'https://cardio-app-production.up.railway.app/api';
 
 function App() {
-  // Estados para Pacientes
+  // --- ESTADOS DE SEGURIDAD ---
+  // Intentamos leer el token de la memoria al iniciar
+  const [token, setToken] = useState(localStorage.getItem('jwt_token')); 
+  const [loginData, setLoginData] = useState({ username: '', password: '' });
+
+  // --- ESTADOS DEL SISTEMA MÉDICO ---
   const [pacientes, setPacientes] = useState([])
   const [nuevoPaciente, setNuevoPaciente] = useState({ nombre: '', apellido: '', dni: '' })
-
-  // Estados para Historia Clínica (Consultas)
   const [pacienteSeleccionado, setPacienteSeleccionado] = useState(null)
   const [consultas, setConsultas] = useState([])
   const [nuevaConsulta, setNuevaConsulta] = useState({ motivo: '', diagnostico: '', tratamiento: '' })
   
-  // Control del Modal (Ventana emergente)
   const { isOpen, onOpen, onClose } = useDisclosure()
 
-  // --- CARGA INICIAL ---
-  const cargarPacientes = async () => {
+  // --- HELPER: CABECERAS CON TOKEN ---
+  // Esto crea el "pase de seguridad" para cada petición
+  const getConfig = () => ({
+    headers: { Authorization: `Bearer ${token}` }
+  });
+
+  // --- FUNCIÓN DE LOGIN ---
+  const handleLogin = async () => {
     try {
-      // CAMBIO 1: Usar la URL de la nube
-      const res = await axios.get(`${API_URL}/pacientes`)
-      setPacientes(res.data)
-    } catch (error) { console.error("Error cargando pacientes", error) }
+      // 1. Pedimos el token al backend (Esta ruta es PUBLICA)
+      const res = await axios.post(`${API_URL}/auth/login`, loginData);
+      const newToken = res.data.token;
+      
+      // 2. Guardamos el token en memoria y en el navegador
+      setToken(newToken);
+      localStorage.setItem('jwt_token', newToken);
+      alert("¡Bienvenido Doctor!");
+    } catch (error) {
+      alert("Error: Usuario o contraseña incorrectos");
+      console.error(error);
+    }
   }
 
-  useEffect(() => { cargarPacientes() }, [])
+  const cerrarSesion = () => {
+    setToken(null);
+    localStorage.removeItem('jwt_token');
+    setPacientes([]);
+  }
+
+  // --- CARGAR PACIENTES ---
+  const cargarPacientes = async () => {
+    if (!token) return; // Si no hay token, no intentamos cargar nada
+    try {
+      // AHORA ENVIAMOS EL CONFIG (TOKEN) EN LA PETICIÓN
+      const res = await axios.get(`${API_URL}/pacientes`, getConfig())
+      setPacientes(res.data)
+    } catch (error) { 
+      console.error("Error cargando pacientes", error);
+      if(error.response?.status === 403) cerrarSesion(); // Si el token venció, salimos
+    }
+  }
+
+  // Recargar pacientes cuando obtenemos el token
+  useEffect(() => { cargarPacientes() }, [token])
 
   // --- GUARDAR PACIENTE ---
   const guardarPaciente = async () => {
     try {
-      // CAMBIO 2: Usar la URL de la nube
-      await axios.post(`${API_URL}/pacientes`, nuevoPaciente)
+      await axios.post(`${API_URL}/pacientes`, nuevoPaciente, getConfig())
       alert("Paciente guardado")
       setNuevoPaciente({ nombre: '', apellido: '', dni: '' })
       cargarPacientes()
     } catch (error) { alert("Error al guardar paciente") }
   }
 
-  // --- ABRIR HISTORIA CLÍNICA ---
+  // --- ABRIR HISTORIA ---
   const abrirHistoria = async (paciente) => {
     setPacienteSeleccionado(paciente)
     try {
-      // CAMBIO 3: Usar la URL de la nube
-      const res = await axios.get(`${API_URL}/consultas/paciente/${paciente.id}`)
+      const res = await axios.get(`${API_URL}/consultas/paciente/${paciente.id}`, getConfig())
       setConsultas(res.data)
-      onOpen() // Abrimos la ventana
+      onOpen()
     } catch (error) { console.error("Error cargando historia", error) }
   }
 
-  // --- GUARDAR CONSULTA (NUEVA EVOLUCIÓN) ---
+  // --- GUARDAR CONSULTA ---
   const guardarConsulta = async () => {
     if (!pacienteSeleccionado) return;
     try {
-      // CAMBIO 4: Usar la URL de la nube
-      await axios.post(`${API_URL}/consultas/${pacienteSeleccionado.id}`, nuevaConsulta)
+      await axios.post(`${API_URL}/consultas/${pacienteSeleccionado.id}`, nuevaConsulta, getConfig())
       alert("Evolución guardada")
       setNuevaConsulta({ motivo: '', diagnostico: '', tratamiento: '' })
       
-      // CAMBIO 5: Recargamos las consultas para ver la nueva
-      const res = await axios.get(`${API_URL}/consultas/paciente/${pacienteSeleccionado.id}`)
+      const res = await axios.get(`${API_URL}/consultas/paciente/${pacienteSeleccionado.id}`, getConfig())
       setConsultas(res.data)
     } catch (error) { alert("Error guardando consulta") }
   }
 
+  // --- VISTA: SI NO HAY TOKEN, MOSTRAMOS LOGIN ---
+  if (!token) {
+    return (
+      <ChakraProvider>
+        <Container maxW="sm" centerContent mt={20}>
+          <Card w="100%" bg="white" boxShadow="lg">
+            <CardBody>
+              <VStack spacing={4}>
+                <Heading size="md" color="blue.600">Acceso Médico</Heading>
+                <Text fontSize="sm" color="gray.500">Sistema Seguro Cordio</Text>
+                <FormControl>
+                  <FormLabel>Email</FormLabel>
+                  <Input 
+                    placeholder="medico@gmail.com" 
+                    onChange={(e) => setLoginData({...loginData, username: e.target.value})}
+                  />
+                </FormControl>
+                <FormControl>
+                  <FormLabel>Contraseña</FormLabel>
+                  <Input 
+                    type="password" 
+                    placeholder="••••••" 
+                    onChange={(e) => setLoginData({...loginData, password: e.target.value})}
+                  />
+                </FormControl>
+                <Button colorScheme="blue" w="full" onClick={handleLogin}>Ingresar</Button>
+              </VStack>
+            </CardBody>
+          </Card>
+        </Container>
+      </ChakraProvider>
+    );
+  }
+
+  // --- VISTA: SI HAY TOKEN, MOSTRAMOS EL SISTEMA ---
   return (
     <ChakraProvider>
       <Box p={8} maxW="1000px" mx="auto">
-        <Heading mb={6} textAlign="center">🏥 Sistema de Gestión Cardiológica</Heading>
+        <Stack direction="row" justifyContent="space-between" mb={6}>
+          <Heading textAlign="center">🏥 Sistema Cardiológico</Heading>
+          <Button colorScheme="red" variant="outline" size="sm" onClick={cerrarSesion}>Cerrar Sesión</Button>
+        </Stack>
 
         {/* FORMULARIO NUEVO PACIENTE */}
         <Card mb={8} bg="gray.50">
@@ -115,7 +185,6 @@ function App() {
             <ModalCloseButton />
             <ModalBody>
               
-              {/* FORMULARIO NUEVA CONSULTA */}
               <Box bg="blue.50" p={4} borderRadius="md" mb={6}>
                 <Text fontWeight="bold" mb={2}>Nueva Evolución (Hoy)</Text>
                 <VStack spacing={3}>
@@ -128,7 +197,6 @@ function App() {
 
               <Divider mb={4} />
 
-              {/* HISTORIAL */}
               <Heading size="sm" mb={4}>Evoluciones Anteriores</Heading>
               {consultas.length === 0 ? <Text>Sin antecedentes cargados.</Text> : (
                 <VStack spacing={3} align="stretch">
