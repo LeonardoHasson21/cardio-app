@@ -5,9 +5,9 @@ import {
   Card, CardBody, Stack, Divider, Modal, ModalOverlay, 
   ModalContent, ModalHeader, ModalBody, ModalCloseButton, 
   useDisclosure, Textarea, Badge, Container, FormControl, FormLabel,
-  Table, Thead, Tbody, Tr, Th, Td, IconButton, useToast
+  Table, Thead, Tbody, Tr, Th, Td, IconButton, useToast, InputGroup, InputLeftElement
 } from '@chakra-ui/react'
-import { DeleteIcon } from '@chakra-ui/icons'
+import { DeleteIcon, SearchIcon } from '@chakra-ui/icons'
 
 // TU URL DE RAILWAY
 const API_URL = 'https://cardio-app-production.up.railway.app/api';
@@ -115,6 +115,25 @@ function App() {
     } catch (error) { alert("Error") }
   }
 
+  // --- BUSCADOR ---
+  const handleBusqueda = async (e) => {
+    const termino = e.target.value;
+    
+    // Si borró todo, volvemos a cargar la lista completa
+    if (termino.length === 0) {
+        cargarPacientes();
+        return;
+    }
+
+    // Si escribió algo, buscamos en el servidor
+    try {
+        const res = await axios.get(`${API_URL}/pacientes/buscar?query=${termino}`, getConfig());
+        setPacientes(res.data);
+    } catch (error) {
+        console.error("Error en búsqueda");
+    }
+  }
+
   // ================= FUNCIONES ADMIN =================
   const cargarMedicos = async () => {
     try {
@@ -220,6 +239,23 @@ function App() {
         </Card>
 
         <Heading size="md" mb={4}>Mis Pacientes</Heading>
+        <Stack direction="row" justifyContent="space-between" alignItems="center" mb={4}>
+            <Heading size="md">Mis Pacientes</Heading>
+            <Box w="300px">
+                <InputGroup>
+                    <InputLeftElement pointerEvents='none'>
+                        <SearchIcon color='gray.300' />
+                    </InputLeftElement>
+                    <Input 
+                        type='text' 
+                        placeholder='Buscar por apellido...' 
+                        bg="white" 
+                        onChange={handleBusqueda} // <--- Conecta con la función
+                    />
+                </InputGroup>
+            </Box>
+        </Stack>
+        {/* Aquí abajo sigue tu <VStack> con la lista de pacientes... */}
         <VStack spacing={4} align="stretch">
           {pacientes.map(p => (
             <Card key={p.id} variant="outline">
