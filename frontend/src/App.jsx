@@ -5,11 +5,11 @@ import {
   Card, CardBody, Stack, Divider, Modal, ModalOverlay, 
   ModalContent, ModalHeader, ModalBody, ModalCloseButton, 
   useDisclosure, Textarea, Badge, Container, FormControl, FormLabel,
-  Table, Thead, Tbody, Tr, Th, Td, IconButton, useToast, InputGroup, InputLeftElement
+  Table, Thead, Tbody, Tr, Th, Td, IconButton, useToast, InputGroup, InputLeftElement, ModalFooter
 } from '@chakra-ui/react'
-import { DeleteIcon, SearchIcon } from '@chakra-ui/icons'
+// --- NUEVO: Importamos EditIcon ---
+import { DeleteIcon, SearchIcon, EditIcon } from '@chakra-ui/icons'
 
-// TU URL DE RAILWAY
 const API_URL = 'https://cardio-app-production.up.railway.app/api';
 
 function App() {
@@ -20,39 +20,41 @@ function App() {
   const [role, setRole] = useState(localStorage.getItem('user_role')); 
   const [loginData, setLoginData] = useState({ username: '', password: '' });
 
-  // --- ESTADOS MEDICO (Pacientes) ---
+  // --- ESTADOS MEDICO ---
   const [pacientes, setPacientes] = useState([])
   const [nuevoPaciente, setNuevoPaciente] = useState({ nombre: '', apellido: '', dni: '' })
+  
+  // Estado para Historia Clínica
   const [pacienteSeleccionado, setPacienteSeleccionado] = useState(null)
   const [consultas, setConsultas] = useState([])
   const [nuevaConsulta, setNuevaConsulta] = useState({ motivo: '', diagnostico: '', tratamiento: '' })
   
-  // --- ESTADOS ADMIN (Medicos) ---
+  // --- NUEVO: Estado para EDICIÓN de Paciente ---
+  const [pacienteAEditar, setPacienteAEditar] = useState({ id: '', nombre: '', apellido: '', dni: '' })
+  
+  // --- ESTADOS ADMIN ---
   const [listaMedicos, setListaMedicos] = useState([])
-  // Estado para el formulario de crear médico
   const [nuevoMedicoData, setNuevoMedicoData] = useState({ username: '', password: '' });
 
-  const { isOpen, onOpen, onClose } = useDisclosure()
+  // Modales
+  const { isOpen, onOpen, onClose } = useDisclosure() // Modal Historia
+  // --- NUEVO: Modal de Edición ---
+  const { isOpen: isOpenEdit, onOpen: onOpenEdit, onClose: onCloseEdit } = useDisclosure()
 
   const getConfig = () => ({ headers: { Authorization: `Bearer ${token}` } });
 
-  // --- LOGIN ---
+  // --- LOGIN Y SESION ---
   const handleLogin = async () => {
     try {
       const res = await axios.post(`${API_URL}/auth/login`, loginData);
       const newToken = res.data.token;
       const userRole = res.data.role;
-
       setToken(newToken);
       setRole(userRole);
-      
       localStorage.setItem('jwt_token', newToken);
       localStorage.setItem('user_role', userRole);
-      
       toast({ title: `Bienvenido ${userRole}`, status: 'success' })
-    } catch (error) {
-      toast({ title: 'Error de credenciales o cuenta bloqueada', status: 'error' })
-    }
+    } catch (error) { toast({ title: 'Error de credenciales', status: 'error' }) }
   }
 
   const cerrarSesion = () => {
@@ -64,7 +66,6 @@ function App() {
     setListaMedicos([]);
   }
 
-  // --- EFECTOS DE CARGA ---
   useEffect(() => {
     if (token && role === 'MEDICO') cargarPacientes();
     if (token && role === 'ADMIN') cargarMedicos();
@@ -96,6 +97,24 @@ function App() {
     } catch (error) { toast({ title: 'No puedes eliminar este paciente', status: 'error' }) }
   }
 
+  // --- NUEVO: Funciones de Edición ---
+  const abrirModalEdicion = (paciente) => {
+    setPacienteAEditar(paciente); // Cargamos los datos actuales en el formulario
+    onOpenEdit(); // Abrimos el modal
+  }
+
+  const actualizarPaciente = async () => {
+    try {
+      await axios.put(`${API_URL}/pacientes/${pacienteAEditar.id}`, pacienteAEditar, getConfig())
+      toast({ title: 'Datos actualizados', status: 'success' })
+      onCloseEdit()
+      cargarPacientes() // Recargamos la lista para ver el cambio
+    } catch (error) {
+      toast({ title: 'Error al actualizar', status: 'error' })
+    }
+  }
+  // ------------------------------------
+
   const abrirHistoria = async (paciente) => {
     setPacienteSeleccionado(paciente)
     try {
@@ -116,13 +135,9 @@ function App() {
     } catch (error) { toast({ title: 'Error al guardar', status: 'error' }) }
   }
 
-  // --- BUSCADOR ---
   const handleBusqueda = async (e) => {
     const termino = e.target.value;
-    if (termino.length === 0) {
-        cargarPacientes();
-        return;
-    }
+    if (termino.length === 0) { cargarPacientes(); return; }
     try {
         const res = await axios.get(`${API_URL}/pacientes/buscar?query=${termino}`, getConfig());
         setPacientes(res.data);
@@ -138,37 +153,32 @@ function App() {
   }
 
   const eliminarMedico = async (id) => {
-    if(!window.confirm("¡ATENCIÓN! Si eliminas al médico, se borrarán TODOS sus pacientes. ¿Confirmar?")) return;
+    if(!window.confirm("¡ATENCIÓN! Se borrarán sus pacientes. ¿Confirmar?")) return;
     try {
       await axios.delete(`${API_URL}/admin/medicos/${id}`, getConfig())
       toast({ title: 'Médico eliminado', status: 'warning' })
       cargarMedicos()
-    } catch (error) { toast({ title: 'Error eliminando médico', status: 'error' }) }
+    } catch (error) { toast({ title: 'Error', status: 'error' }) }
   }
 
-  // Crear médico desde el admin
   const crearMedicoAdmin = async () => {
     try {
         await axios.post(`${API_URL}/admin/medicos`, nuevoMedicoData, getConfig());
-        toast({ title: 'Médico creado exitosamente', status: 'success' });
+        toast({ title: 'Médico creado', status: 'success' });
         setNuevoMedicoData({ username: '', password: '' });
         cargarMedicos(); 
-    } catch (error) {
-        toast({ title: 'Error: El usuario ya existe o datos inválidos', status: 'error' });
-    }
+    } catch (error) { toast({ title: 'Error: Usuario existente', status: 'error' }); }
   }
 
-  // Bloquear / Desbloquear acceso
   const toggleMedico = async (id) => {
     try {
         await axios.put(`${API_URL}/admin/medicos/${id}/toggle`, {}, getConfig());
         cargarMedicos(); 
         toast({ title: 'Estado actualizado', status: 'info' });
-    } catch (error) { toast({ title: 'Error actualizando estado', status: 'error' }) }
+    } catch (error) { toast({ title: 'Error', status: 'error' }) }
   }
 
 
-  // --- VISTA LOGIN ---
   if (!token) {
     return (
       <ChakraProvider>
@@ -194,7 +204,6 @@ function App() {
     );
   }
 
-  // --- VISTA ADMIN (PANEL DE GESTIÓN) ---
   if (role === 'ADMIN') {
     return (
         <ChakraProvider>
@@ -203,64 +212,32 @@ function App() {
                     <Heading color="purple.600">🛡️ Panel de Suscripciones</Heading>
                     <Button colorScheme="red" variant="outline" size="sm" onClick={cerrarSesion}>Salir</Button>
                 </Stack>
-                
-                {/* FORMULARIO CREAR MÉDICO */}
                 <Card mb={8} bg="purple.50">
                     <CardBody>
                         <Heading size="sm" mb={4}>Dar de Alta Nuevo Médico</Heading>
                         <Stack direction="row" spacing={4}>
-                            <Input 
-                                placeholder="Email del médico" 
-                                bg="white" 
-                                value={nuevoMedicoData.username} 
-                                onChange={(e) => setNuevoMedicoData({...nuevoMedicoData, username: e.target.value})} 
-                            />
-                            <Input 
-                                placeholder="Contraseña provisoria" 
-                                type="password" 
-                                bg="white" 
-                                value={nuevoMedicoData.password} 
-                                onChange={(e) => setNuevoMedicoData({...nuevoMedicoData, password: e.target.value})} 
-                            />
-                            <Button colorScheme="purple" onClick={crearMedicoAdmin}>Crear Cuenta</Button>
+                            <Input placeholder="Email" bg="white" value={nuevoMedicoData.username} onChange={(e) => setNuevoMedicoData({...nuevoMedicoData, username: e.target.value})} />
+                            <Input placeholder="Contraseña" type="password" bg="white" value={nuevoMedicoData.password} onChange={(e) => setNuevoMedicoData({...nuevoMedicoData, password: e.target.value})} />
+                            <Button colorScheme="purple" onClick={crearMedicoAdmin}>Crear</Button>
                         </Stack>
                     </CardBody>
                 </Card>
-
-                {/* TABLA DE MÉDICOS */}
                 <Card variant="outline">
                     <CardBody>
                         <Heading size="md" mb={4}>Gestión de Accesos</Heading>
                         <Table variant="simple">
-                            <Thead>
-                                <Tr><Th>Estado</Th><Th>Médico (Email)</Th><Th>Acción</Th></Tr>
-                            </Thead>
+                            <Thead><Tr><Th>Estado</Th><Th>Médico</Th><Th>Acción</Th></Tr></Thead>
                             <Tbody>
                                 {listaMedicos.map(medico => (
                                     <Tr key={medico.id}>
-                                        <Td>
-                                            <Badge colorScheme={medico.enabled ? "green" : "red"}>
-                                                {medico.enabled ? "ACTIVO" : "BLOQUEADO"}
-                                            </Badge>
-                                        </Td>
+                                        <Td><Badge colorScheme={medico.enabled ? "green" : "red"}>{medico.enabled ? "ACTIVO" : "BLOQUEADO"}</Badge></Td>
                                         <Td fontWeight="bold">{medico.username}</Td>
                                         <Td>
                                             <Stack direction="row" spacing={2}>
-                                                <Button 
-                                                    size="sm" 
-                                                    colorScheme={medico.enabled ? "orange" : "green"} 
-                                                    variant="solid"
-                                                    onClick={() => toggleMedico(medico.id)}
-                                                >
+                                                <Button size="sm" colorScheme={medico.enabled ? "orange" : "green"} onClick={() => toggleMedico(medico.id)}>
                                                     {medico.enabled ? "Bloquear" : "Habilitar"}
                                                 </Button>
-                                                <IconButton 
-                                                    aria-label="Borrar" 
-                                                    icon={<DeleteIcon />} 
-                                                    colorScheme="red" 
-                                                    size="sm" 
-                                                    onClick={() => eliminarMedico(medico.id)} 
-                                                />
+                                                <IconButton aria-label="Borrar" icon={<DeleteIcon />} colorScheme="red" size="sm" onClick={() => eliminarMedico(medico.id)} />
                                             </Stack>
                                         </Td>
                                     </Tr>
@@ -274,7 +251,7 @@ function App() {
     )
   }
 
-  // --- VISTA MEDICO (PANEL DE PACIENTES) ---
+  // --- VISTA MEDICO ---
   return (
     <ChakraProvider>
       <Box p={8} maxW="1000px" mx="auto">
@@ -283,7 +260,6 @@ function App() {
           <Button colorScheme="red" variant="outline" size="sm" onClick={cerrarSesion}>Cerrar Sesión</Button>
         </Stack>
 
-        {/* REGISTRO DE PACIENTE */}
         <Card mb={8} bg="gray.50">
           <CardBody>
             <Heading size="md" mb={4}>Nuevo Paciente</Heading>
@@ -296,25 +272,16 @@ function App() {
           </CardBody>
         </Card>
 
-        {/* BUSCADOR Y TÍTULO */}
         <Stack direction="row" justifyContent="space-between" alignItems="center" mb={4}>
             <Heading size="md">Mis Pacientes</Heading>
             <Box w="300px">
                 <InputGroup>
-                    <InputLeftElement pointerEvents='none'>
-                        <SearchIcon color='gray.300' />
-                    </InputLeftElement>
-                    <Input 
-                        type='text' 
-                        placeholder='Buscar por apellido...' 
-                        bg="white" 
-                        onChange={handleBusqueda} 
-                    />
+                    <InputLeftElement pointerEvents='none'><SearchIcon color='gray.300' /></InputLeftElement>
+                    <Input placeholder='Buscar por apellido...' bg="white" onChange={handleBusqueda} />
                 </InputGroup>
             </Box>
         </Stack>
         
-        {/* LISTA DE PACIENTES */}
         <VStack spacing={4} align="stretch">
           {pacientes.map(p => (
             <Card key={p.id} variant="outline">
@@ -325,6 +292,17 @@ function App() {
                 </Box>
                 <Stack direction="row">
                     <Button colorScheme="teal" size="sm" onClick={() => abrirHistoria(p)}>📂 Historia</Button>
+                    
+                    {/* --- NUEVO: Botón de Editar --- */}
+                    <IconButton 
+                        icon={<EditIcon/>} 
+                        colorScheme="blue" 
+                        size="sm" 
+                        variant="ghost" 
+                        onClick={() => abrirModalEdicion(p)} 
+                    />
+                    {/* ----------------------------- */}
+
                     <IconButton icon={<DeleteIcon/>} colorScheme="red" size="sm" variant="ghost" onClick={() => eliminarPaciente(p.id)} />
                 </Stack>
               </CardBody>
@@ -332,7 +310,36 @@ function App() {
           ))}
         </VStack>
 
-        {/* MODAL HISTORIA CLÍNICA */}
+        {/* --- NUEVO: Modal de Edición --- */}
+        <Modal isOpen={isOpenEdit} onClose={onCloseEdit}>
+            <ModalOverlay />
+            <ModalContent>
+                <ModalHeader>Editar Paciente</ModalHeader>
+                <ModalCloseButton />
+                <ModalBody>
+                    <VStack spacing={4}>
+                        <FormControl>
+                            <FormLabel>Nombre</FormLabel>
+                            <Input value={pacienteAEditar.nombre} onChange={(e) => setPacienteAEditar({...pacienteAEditar, nombre: e.target.value})} />
+                        </FormControl>
+                        <FormControl>
+                            <FormLabel>Apellido</FormLabel>
+                            <Input value={pacienteAEditar.apellido} onChange={(e) => setPacienteAEditar({...pacienteAEditar, apellido: e.target.value})} />
+                        </FormControl>
+                        <FormControl>
+                            <FormLabel>DNI</FormLabel>
+                            <Input value={pacienteAEditar.dni} onChange={(e) => setPacienteAEditar({...pacienteAEditar, dni: e.target.value})} />
+                        </FormControl>
+                    </VStack>
+                </ModalBody>
+                <ModalFooter>
+                    <Button variant="ghost" mr={3} onClick={onCloseEdit}>Cancelar</Button>
+                    <Button colorScheme="blue" onClick={actualizarPaciente}>Guardar Cambios</Button>
+                </ModalFooter>
+            </ModalContent>
+        </Modal>
+
+        {/* Modal Historia Clínica */}
         <Modal isOpen={isOpen} onClose={onClose} size="xl">
           <ModalOverlay />
           <ModalContent>
