@@ -14,4 +14,14 @@ export default defineConfig({
       "@": path.resolve(__dirname, "./src"),
     },
   },
+  // --- CONFIGURACIÓN PARA RAILWAY (VITE 6) ---
+  server: {
+    host: true,       // Escuchar en todas las interfaces (0.0.0.0)
+    allowedHosts: true // Permitir cualquier dominio (soluciona el error Blocked request)
+  },
+  preview: {
+    host: true,       // Escuchar en todas las interfaces en modo preview
+    port: 4173,       // Puerto estándar de preview
+    allowedHosts: true // Permitir el dominio de Railway en producción
+  }
 })
