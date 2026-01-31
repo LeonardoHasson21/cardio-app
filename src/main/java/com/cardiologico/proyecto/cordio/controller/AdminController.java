@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.cardiologico.proyecto.cordio.auth.RegisterRequest;
 import com.cardiologico.proyecto.cordio.model.Role;
 import com.cardiologico.proyecto.cordio.model.Usuario;
 import com.cardiologico.proyecto.cordio.repository.UsuarioRepository;
@@ -38,17 +39,18 @@ public class AdminController {
 
     // 2. CREAR MÉDICO (Solo el Admin puede usar esto)
     @PostMapping("/medicos")
-    public ResponseEntity<Usuario> crearMedico(@RequestBody Usuario request) {
-        // Verificamos que no exista el email
+    public ResponseEntity<Usuario> crearMedico(@RequestBody RegisterRequest request) {
+        
+        // Verificamos si ya existe
         if (usuarioRepository.findByUsername(request.getUsername()).isPresent()) {
             return ResponseEntity.badRequest().build();
         }
 
         Usuario nuevoMedico = Usuario.builder()
             .username(request.getUsername())
-            .password(passwordEncoder.encode(request.getPassword())) // ¡Encriptamos la clave!
+            .password(passwordEncoder.encode(request.getPassword()))
             .role(Role.MEDICO)
-            .enabled(true) // Nace activo
+            .enabled(true) // Nosotros lo activamos manualmente aquí
             .build();
         
         return ResponseEntity.ok(usuarioRepository.save(nuevoMedico));
