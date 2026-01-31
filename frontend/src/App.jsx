@@ -15,22 +15,22 @@ const API_URL = 'https://cardio-app-production.up.railway.app/api';
 function App() {
   const toast = useToast()
   
-  // ESTADOS DE SEGURIDAD
+  // --- ESTADOS DE SEGURIDAD ---
   const [token, setToken] = useState(localStorage.getItem('jwt_token')); 
-  // Leemos el rol guardado, si no existe asumimos null
   const [role, setRole] = useState(localStorage.getItem('user_role')); 
-  
   const [loginData, setLoginData] = useState({ username: '', password: '' });
 
-  // ESTADOS MEDICO (Pacientes)
+  // --- ESTADOS MEDICO (Pacientes) ---
   const [pacientes, setPacientes] = useState([])
   const [nuevoPaciente, setNuevoPaciente] = useState({ nombre: '', apellido: '', dni: '' })
   const [pacienteSeleccionado, setPacienteSeleccionado] = useState(null)
   const [consultas, setConsultas] = useState([])
   const [nuevaConsulta, setNuevaConsulta] = useState({ motivo: '', diagnostico: '', tratamiento: '' })
   
-  // ESTADOS ADMIN (Medicos)
+  // --- ESTADOS ADMIN (Medicos) ---
   const [listaMedicos, setListaMedicos] = useState([])
+  // Estado para el formulario de crear médico
+  const [nuevoMedicoData, setNuevoMedicoData] = useState({ username: '', password: '' });
 
   const { isOpen, onOpen, onClose } = useDisclosure()
 
@@ -41,7 +41,7 @@ function App() {
     try {
       const res = await axios.post(`${API_URL}/auth/login`, loginData);
       const newToken = res.data.token;
-      const userRole = res.data.role; // Ahora el backend nos manda el ROL
+      const userRole = res.data.role;
 
       setToken(newToken);
       setRole(userRole);
@@ -51,7 +51,7 @@ function App() {
       
       toast({ title: `Bienvenido ${userRole}`, status: 'success' })
     } catch (error) {
-      toast({ title: 'Error de credenciales', status: 'error' })
+      toast({ title: 'Error de credenciales o cuenta bloqueada', status: 'error' })
     }
   }
 
@@ -112,26 +112,21 @@ function App() {
       setNuevaConsulta({ motivo: '', diagnostico: '', tratamiento: '' })
       const res = await axios.get(`${API_URL}/consultas/paciente/${pacienteSeleccionado.id}`, getConfig())
       setConsultas(res.data)
-    } catch (error) { alert("Error") }
+      toast({ title: 'Evolución guardada', status: 'success' })
+    } catch (error) { toast({ title: 'Error al guardar', status: 'error' }) }
   }
 
   // --- BUSCADOR ---
   const handleBusqueda = async (e) => {
     const termino = e.target.value;
-    
-    // Si borró todo, volvemos a cargar la lista completa
     if (termino.length === 0) {
         cargarPacientes();
         return;
     }
-
-    // Si escribió algo, buscamos en el servidor
     try {
         const res = await axios.get(`${API_URL}/pacientes/buscar?query=${termino}`, getConfig());
         setPacientes(res.data);
-    } catch (error) {
-        console.error("Error en búsqueda");
-    }
+    } catch (error) { console.error("Error en búsqueda"); }
   }
 
   // ================= FUNCIONES ADMIN =================
@@ -149,6 +144,27 @@ function App() {
       toast({ title: 'Médico eliminado', status: 'warning' })
       cargarMedicos()
     } catch (error) { toast({ title: 'Error eliminando médico', status: 'error' }) }
+  }
+
+  // Crear médico desde el admin
+  const crearMedicoAdmin = async () => {
+    try {
+        await axios.post(`${API_URL}/admin/medicos`, nuevoMedicoData, getConfig());
+        toast({ title: 'Médico creado exitosamente', status: 'success' });
+        setNuevoMedicoData({ username: '', password: '' });
+        cargarMedicos(); 
+    } catch (error) {
+        toast({ title: 'Error: El usuario ya existe o datos inválidos', status: 'error' });
+    }
+  }
+
+  // Bloquear / Desbloquear acceso
+  const toggleMedico = async (id) => {
+    try {
+        await axios.put(`${API_URL}/admin/medicos/${id}/toggle`, {}, getConfig());
+        cargarMedicos(); 
+        toast({ title: 'Estado actualizado', status: 'info' });
+    } catch (error) { toast({ title: 'Error actualizando estado', status: 'error' }) }
   }
 
 
@@ -178,33 +194,74 @@ function App() {
     );
   }
 
-  // --- VISTA ADMIN (PANEL DE MEDICOS) ---
+  // --- VISTA ADMIN (PANEL DE GESTIÓN) ---
   if (role === 'ADMIN') {
     return (
         <ChakraProvider>
             <Box p={8} maxW="1000px" mx="auto">
                 <Stack direction="row" justifyContent="space-between" mb={6}>
-                    <Heading color="purple.600">🛡️ Panel de Administrador</Heading>
+                    <Heading color="purple.600">🛡️ Panel de Suscripciones</Heading>
                     <Button colorScheme="red" variant="outline" size="sm" onClick={cerrarSesion}>Salir</Button>
                 </Stack>
                 
+                {/* FORMULARIO CREAR MÉDICO */}
+                <Card mb={8} bg="purple.50">
+                    <CardBody>
+                        <Heading size="sm" mb={4}>Dar de Alta Nuevo Médico</Heading>
+                        <Stack direction="row" spacing={4}>
+                            <Input 
+                                placeholder="Email del médico" 
+                                bg="white" 
+                                value={nuevoMedicoData.username} 
+                                onChange={(e) => setNuevoMedicoData({...nuevoMedicoData, username: e.target.value})} 
+                            />
+                            <Input 
+                                placeholder="Contraseña provisoria" 
+                                type="password" 
+                                bg="white" 
+                                value={nuevoMedicoData.password} 
+                                onChange={(e) => setNuevoMedicoData({...nuevoMedicoData, password: e.target.value})} 
+                            />
+                            <Button colorScheme="purple" onClick={crearMedicoAdmin}>Crear Cuenta</Button>
+                        </Stack>
+                    </CardBody>
+                </Card>
+
+                {/* TABLA DE MÉDICOS */}
                 <Card variant="outline">
                     <CardBody>
-                        <Heading size="md" mb={4}>Gestión de Médicos</Heading>
+                        <Heading size="md" mb={4}>Gestión de Accesos</Heading>
                         <Table variant="simple">
                             <Thead>
-                                <Tr><Th>ID</Th><Th>Email</Th><Th>Rol</Th><Th>Acción</Th></Tr>
+                                <Tr><Th>Estado</Th><Th>Médico (Email)</Th><Th>Acción</Th></Tr>
                             </Thead>
                             <Tbody>
                                 {listaMedicos.map(medico => (
                                     <Tr key={medico.id}>
-                                        <Td>{medico.id}</Td>
-                                        <Td fontWeight="bold">{medico.username}</Td>
-                                        <Td><Badge colorScheme="purple">{medico.role}</Badge></Td>
                                         <Td>
-                                            <IconButton aria-label="Borrar" icon={<DeleteIcon />} colorScheme="red" size="sm" 
-                                                onClick={() => eliminarMedico(medico.id)} 
-                                            />
+                                            <Badge colorScheme={medico.enabled ? "green" : "red"}>
+                                                {medico.enabled ? "ACTIVO" : "BLOQUEADO"}
+                                            </Badge>
+                                        </Td>
+                                        <Td fontWeight="bold">{medico.username}</Td>
+                                        <Td>
+                                            <Stack direction="row" spacing={2}>
+                                                <Button 
+                                                    size="sm" 
+                                                    colorScheme={medico.enabled ? "orange" : "green"} 
+                                                    variant="solid"
+                                                    onClick={() => toggleMedico(medico.id)}
+                                                >
+                                                    {medico.enabled ? "Bloquear" : "Habilitar"}
+                                                </Button>
+                                                <IconButton 
+                                                    aria-label="Borrar" 
+                                                    icon={<DeleteIcon />} 
+                                                    colorScheme="red" 
+                                                    size="sm" 
+                                                    onClick={() => eliminarMedico(medico.id)} 
+                                                />
+                                            </Stack>
                                         </Td>
                                     </Tr>
                                 ))}
@@ -226,19 +283,20 @@ function App() {
           <Button colorScheme="red" variant="outline" size="sm" onClick={cerrarSesion}>Cerrar Sesión</Button>
         </Stack>
 
+        {/* REGISTRO DE PACIENTE */}
         <Card mb={8} bg="gray.50">
           <CardBody>
             <Heading size="md" mb={4}>Nuevo Paciente</Heading>
             <Stack direction="row" spacing={4}>
-              <Input placeholder="Nombre" bg="white" onChange={(e) => setNuevoPaciente({...nuevoPaciente, nombre: e.target.value})} />
-              <Input placeholder="Apellido" bg="white" onChange={(e) => setNuevoPaciente({...nuevoPaciente, apellido: e.target.value})} />
-              <Input placeholder="DNI" bg="white" onChange={(e) => setNuevoPaciente({...nuevoPaciente, dni: e.target.value})} />
+              <Input placeholder="Nombre" bg="white" value={nuevoPaciente.nombre} onChange={(e) => setNuevoPaciente({...nuevoPaciente, nombre: e.target.value})} />
+              <Input placeholder="Apellido" bg="white" value={nuevoPaciente.apellido} onChange={(e) => setNuevoPaciente({...nuevoPaciente, apellido: e.target.value})} />
+              <Input placeholder="DNI" bg="white" value={nuevoPaciente.dni} onChange={(e) => setNuevoPaciente({...nuevoPaciente, dni: e.target.value})} />
               <Button colorScheme="blue" onClick={guardarPaciente}>Registrar</Button>
             </Stack>
           </CardBody>
         </Card>
 
-        <Heading size="md" mb={4}>Mis Pacientes</Heading>
+        {/* BUSCADOR Y TÍTULO */}
         <Stack direction="row" justifyContent="space-between" alignItems="center" mb={4}>
             <Heading size="md">Mis Pacientes</Heading>
             <Box w="300px">
@@ -250,12 +308,13 @@ function App() {
                         type='text' 
                         placeholder='Buscar por apellido...' 
                         bg="white" 
-                        onChange={handleBusqueda} // <--- Conecta con la función
+                        onChange={handleBusqueda} 
                     />
                 </InputGroup>
             </Box>
         </Stack>
-        {/* Aquí abajo sigue tu <VStack> con la lista de pacientes... */}
+        
+        {/* LISTA DE PACIENTES */}
         <VStack spacing={4} align="stretch">
           {pacientes.map(p => (
             <Card key={p.id} variant="outline">
@@ -273,6 +332,7 @@ function App() {
           ))}
         </VStack>
 
+        {/* MODAL HISTORIA CLÍNICA */}
         <Modal isOpen={isOpen} onClose={onClose} size="xl">
           <ModalOverlay />
           <ModalContent>

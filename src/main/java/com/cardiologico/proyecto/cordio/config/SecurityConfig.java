@@ -27,18 +27,19 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         return http
-            .csrf(csrf -> csrf.disable()) 
-            .cors(cors -> cors.configurationSource(corsConfigurationSource())) 
-            .authorizeHttpRequests(authRequest -> 
-              authRequest
-                .requestMatchers("/api/auth/**").permitAll()
-                .anyRequest().authenticated() 
-            )
-            .sessionManagement(sessionManager ->
-                sessionManager.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-            .authenticationProvider(authProvider)
-            .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
-            .build();
+                .csrf(csrf -> csrf.disable())
+                .cors(cors -> cors.configurationSource(corsConfigurationSource()))
+                .authorizeHttpRequests(authRequest
+                        -> authRequest
+                        .requestMatchers("/api/auth/login").permitAll() // Solo Login es público
+                        .requestMatchers("/api/auth/register").hasRole("ADMIN") // Register solo para Admin (o lo bloqueas del todo)
+                        .anyRequest().authenticated()
+                )
+                .sessionManagement(sessionManager
+                        -> sessionManager.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                .authenticationProvider(authProvider)
+                .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
+                .build();
     }
 
     @Bean
@@ -47,7 +48,7 @@ public class SecurityConfig {
         configuration.setAllowedOrigins(List.of("*")); // Permite entrar desde CUALQUIER lugar (Tu Frontend)
         configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS")); // Permite todas las acciones
         configuration.setAllowedHeaders(List.of("Authorization", "Content-Type")); // Permite enviar el Token
-        
+
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", configuration);
         return source;

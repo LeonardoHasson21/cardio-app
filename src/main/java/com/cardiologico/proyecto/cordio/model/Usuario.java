@@ -42,6 +42,9 @@ public class Usuario implements UserDetails {
     @Column(nullable = false)
     private String password;
 
+    @Builder.Default
+    private boolean enabled = true;
+
     @Enumerated(EnumType.STRING)
     private Role role;
 
@@ -61,5 +64,5 @@ public class Usuario implements UserDetails {
     @Override
     public boolean isCredentialsNonExpired() { return true; }
     @Override
-    public boolean isEnabled() { return true; }
+    public boolean isEnabled() { return enabled; }
 }
