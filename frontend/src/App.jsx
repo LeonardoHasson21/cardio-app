@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import axios from 'axios'
 import { cn } from "@/lib/utils"
-import { Sidebar } from "@/components/Sidebar" 
+import { Sidebar } from "@/components/sidebar" 
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
@@ -19,10 +19,10 @@ import {
   X, 
   Lock, 
   Unlock,
-  Users,       // Nuevo
-  Calendar,    // Nuevo
-  TrendingUp,  // Nuevo
-  Clock        // Nuevo
+  Users,
+  Calendar,
+  TrendingUp,
+  Clock
 } from "lucide-react"
 
 const API_URL = 'https://cardio-app-production.up.railway.app/api';
