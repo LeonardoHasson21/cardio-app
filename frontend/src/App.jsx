@@ -1,24 +1,28 @@
 import { useState, useEffect } from 'react'
 import axios from 'axios'
 import { cn } from "@/lib/utils"
-import { Sidebar } from "@/components/sidebar" 
+import { Sidebar } from "@/components/Sidebar" 
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 
-// Iconos Lucide
+// Iconos Lucide (Incluye los nuevos para el dashboard)
 import { 
   Plus, 
   Search, 
   Activity, 
   Trash2, 
   Edit, 
-  FileText,
-  User,
-  Menu,
-  X,
-  Lock,
-  Unlock
+  FileText, 
+  User, 
+  Menu, 
+  X, 
+  Lock, 
+  Unlock,
+  Users,       // Nuevo
+  Calendar,    // Nuevo
+  TrendingUp,  // Nuevo
+  Clock        // Nuevo
 } from "lucide-react"
 
 const API_URL = 'https://cardio-app-production.up.railway.app/api';
@@ -50,13 +54,17 @@ export default function App() {
   const [sidebarOpen, setSidebarOpen] = useState(false) // Para móvil
   const [searchTerm, setSearchTerm] = useState("")
 
+  // Estado para los datos del Dashboard
+  const [dashboardData, setDashboardData] = useState(null);
+
   const getConfig = () => ({ headers: { Authorization: `Bearer ${token}` } });
 
   // --- EFECTOS ---
   useEffect(() => {
     if (token && role === 'MEDICO') {
       cargarPacientes();
-      setActiveTab("pacientes");
+      cargarDashboard(); // Cargar datos del dashboard al entrar
+      setActiveTab("dashboard");
     }
     if (token && role === 'ADMIN') {
       cargarMedicos();
@@ -64,7 +72,7 @@ export default function App() {
     }
   }, [token, role])
 
-  // --- TUS FUNCIONES (SIN CAMBIOS) ---
+  // --- TUS FUNCIONES (LOGICA DE NEGOCIO) ---
   const handleLogin = async () => {
     try {
       const res = await axios.post(`${API_URL}/auth/login`, loginData);
@@ -72,46 +80,67 @@ export default function App() {
       localStorage.setItem('jwt_token', res.data.token); localStorage.setItem('user_role', res.data.role);
     } catch (error) { alert("Error de credenciales") }
   }
+  
   const cerrarSesion = () => {
     setToken(null); setRole(null);
     localStorage.removeItem('jwt_token'); localStorage.removeItem('user_role');
+    setPacientes([]); setDashboardData(null);
   }
+
   const cargarPacientes = async () => {
     try { const res = await axios.get(`${API_URL}/pacientes`, getConfig()); setPacientes(res.data) } catch (error) {}
   }
+
+  const cargarDashboard = async () => {
+    try {
+        const res = await axios.get(`${API_URL}/dashboard`, getConfig());
+        setDashboardData(res.data);
+    } catch (error) {
+        console.error("Error cargando dashboard (Backend no actualizado aún?)", error);
+    }
+  }
+
   const guardarPaciente = async (e) => {
     e.preventDefault();
-    try { await axios.post(`${API_URL}/pacientes`, nuevoPaciente, getConfig()); alert("Paciente Guardado"); setNuevoPaciente({nombre:'',apellido:'',dni:''}); cargarPacientes(); } catch (error) {alert("Error")}
+    try { await axios.post(`${API_URL}/pacientes`, nuevoPaciente, getConfig()); alert("Paciente Guardado"); setNuevoPaciente({nombre:'',apellido:'',dni:''}); cargarPacientes(); cargarDashboard(); } catch (error) {alert("Error")}
   }
+
   const eliminarPaciente = async (id) => {
     if(!window.confirm("¿Seguro?")) return;
-    try { await axios.delete(`${API_URL}/pacientes/${id}`, getConfig()); cargarPacientes(); } catch (error) {alert("Error")}
+    try { await axios.delete(`${API_URL}/pacientes/${id}`, getConfig()); cargarPacientes(); cargarDashboard(); } catch (error) {alert("Error")}
   }
+
   const prepararEdicion = (paciente) => { setPacienteAEditar(paciente); setMostrarModalEditar(true); }
+  
   const actualizarPaciente = async () => {
     try { await axios.put(`${API_URL}/pacientes/${pacienteAEditar.id}`, pacienteAEditar, getConfig()); setMostrarModalEditar(false); cargarPacientes(); } catch (error) {alert("Error")}
   }
+
   const handleBusqueda = async (termino) => {
     setSearchTerm(termino);
     if (termino.length === 0) { cargarPacientes(); return; }
     try { const res = await axios.get(`${API_URL}/pacientes/buscar?query=${termino}`, getConfig()); setPacientes(res.data); } catch (error) { }
   }
+
   const abrirHistoria = async (paciente) => {
     setPacienteSeleccionado(paciente);
     try { const res = await axios.get(`${API_URL}/consultas/paciente/${paciente.id}`, getConfig()); setConsultas(res.data); setMostrarModalHistoria(true); } catch (error) {}
   }
+
   const guardarConsulta = async () => {
     if (!pacienteSeleccionado) return;
     try { await axios.post(`${API_URL}/consultas/${pacienteSeleccionado.id}`, nuevaConsulta, getConfig()); setNuevaConsulta({motivo:'',diagnostico:'',tratamiento:''}); 
-    const res = await axios.get(`${API_URL}/consultas/paciente/${pacienteSeleccionado.id}`, getConfig()); setConsultas(res.data); } catch (error) { alert("Error") }
+    const res = await axios.get(`${API_URL}/consultas/paciente/${pacienteSeleccionado.id}`, getConfig()); setConsultas(res.data); cargarDashboard(); } catch (error) { alert("Error") }
   }
+
+  // Funciones Admin
   const cargarMedicos = async () => { try { const res = await axios.get(`${API_URL}/admin/medicos`, getConfig()); setListaMedicos(res.data) } catch (error) { } }
   const crearMedicoAdmin = async () => { try { await axios.post(`${API_URL}/admin/medicos`, nuevoMedicoData, getConfig()); cargarMedicos(); alert("Creado"); } catch (error) {} }
   const toggleMedico = async (id) => { try { await axios.put(`${API_URL}/admin/medicos/${id}/toggle`, {}, getConfig()); cargarMedicos(); } catch (error) { } }
   const eliminarMedico = async (id) => { if(!window.confirm("¿Confirmar?")) return; try { await axios.delete(`${API_URL}/admin/medicos/${id}`, getConfig()); cargarMedicos() } catch (error) { } }
 
 
-  // ==================== VISTA LOGIN (Centrado y Limpio) ====================
+  // ==================== VISTA LOGIN ====================
   if (!token) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50 p-4">
@@ -150,11 +179,11 @@ export default function App() {
     );
   }
 
-  // ==================== VISTA PRINCIPAL (Layout Pro) ====================
+  // ==================== VISTA PRINCIPAL ====================
   return (
-    <div className="flex min-h-screen bg-muted/30"> {/* Fondo general gris muy suave */}
+    <div className="flex min-h-screen bg-muted/30">
       
-      {/* 1. SIDEBAR OSCURO */}
+      {/* 1. SIDEBAR */}
       <div className={cn(
         "fixed inset-y-0 left-0 z-50 transform transition-transform duration-300 lg:relative lg:translate-x-0",
         sidebarOpen ? "translate-x-0" : "-translate-x-full"
@@ -186,7 +215,7 @@ export default function App() {
              </h2>
           </div>
           
-          {/* Search bar en Header si estamos en pacientes */}
+          {/* Search bar (Solo visible en pacientes) */}
           {activeTab === 'pacientes' && (
              <div className="hidden md:flex relative w-64">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
@@ -201,6 +230,127 @@ export default function App() {
 
         <div className="p-6 lg:p-10 max-w-7xl mx-auto space-y-6">
           
+          {/* --- VISTA DASHBOARD (PANEL DE CONTROL) --- */}
+          {activeTab === 'dashboard' && (
+            <div className="space-y-8 animate-in fade-in zoom-in-95 duration-500">
+              
+              <div>
+                <h2 className="text-2xl font-bold text-gray-800">Panel de Control</h2>
+                <p className="text-muted-foreground">Resumen de actividad en tiempo real</p>
+              </div>
+
+              {/* Si no hay datos (o backend apagado), mostramos esqueleto de carga */}
+              {!dashboardData ? (
+                 <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+                    {[1,2,3,4].map(i => <div key={i} className="h-32 bg-gray-200/50 rounded-xl animate-pulse"></div>)}
+                 </div>
+              ) : (
+                <>
+                  {/* Grid de Estadísticas */}
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                    {/* Card 1: Pacientes */}
+                    <Card className="border-none shadow-sm hover:shadow-md transition-shadow">
+                        <CardContent className="p-6">
+                          <div className="flex justify-between items-start">
+                            <div>
+                              <p className="text-sm font-medium text-gray-500">Pacientes Activos</p>
+                              <h3 className="text-3xl font-bold text-gray-800 mt-2">{dashboardData.totalPacientes || 0}</h3>
+                            </div>
+                            <div className="p-2 rounded-lg bg-cyan-50 text-cyan-600"><Users className="w-5 h-5"/></div>
+                          </div>
+                          <p className="text-xs text-cyan-600 mt-2 font-medium">+ Activos actualmente</p>
+                        </CardContent>
+                    </Card>
+
+                    {/* Card 2: Consultas Totales */}
+                    <Card className="border-none shadow-sm hover:shadow-md transition-shadow">
+                        <CardContent className="p-6">
+                          <div className="flex justify-between items-start">
+                            <div>
+                              <p className="text-sm font-medium text-gray-500">Total Consultas</p>
+                              <h3 className="text-3xl font-bold text-gray-800 mt-2">{dashboardData.totalConsultas || 0}</h3>
+                            </div>
+                            <div className="p-2 rounded-lg bg-blue-50 text-blue-600"><FileText className="w-5 h-5"/></div>
+                          </div>
+                          <p className="text-xs text-blue-600 mt-2 font-medium">Histórico global</p>
+                        </CardContent>
+                    </Card>
+
+                    {/* Card 3: Citas Hoy */}
+                    <Card className="border-none shadow-sm hover:shadow-md transition-shadow">
+                        <CardContent className="p-6">
+                          <div className="flex justify-between items-start">
+                            <div>
+                              <p className="text-sm font-medium text-gray-500">Citas Hoy</p>
+                              <h3 className="text-3xl font-bold text-gray-800 mt-2">{dashboardData.consultasHoy || 0}</h3>
+                            </div>
+                            <div className="p-2 rounded-lg bg-purple-50 text-purple-600"><Calendar className="w-5 h-5"/></div>
+                          </div>
+                          <p className="text-xs text-purple-600 mt-2 font-medium">Agenda del día</p>
+                        </CardContent>
+                    </Card>
+
+                    {/* Card 4: Consultas Mes */}
+                    <Card className="border-none shadow-sm hover:shadow-md transition-shadow">
+                        <CardContent className="p-6">
+                          <div className="flex justify-between items-start">
+                            <div>
+                              <p className="text-sm font-medium text-gray-500">Este Mes</p>
+                              <h3 className="text-3xl font-bold text-gray-800 mt-2">{dashboardData.consultasMes || 0}</h3>
+                            </div>
+                            <div className="p-2 rounded-lg bg-emerald-50 text-emerald-600"><TrendingUp className="w-5 h-5"/></div>
+                          </div>
+                          <p className="text-xs text-emerald-600 mt-2 font-medium">Rendimiento mensual</p>
+                        </CardContent>
+                    </Card>
+                  </div>
+
+                  {/* Tabla de Historias Recientes */}
+                  <Card className="border-none shadow-sm overflow-hidden bg-white">
+                    <CardHeader className="bg-white border-b border-gray-100 px-6 py-5">
+                      <CardTitle className="text-lg font-bold text-gray-800 flex items-center gap-2">
+                        <Clock className="w-5 h-5 text-gray-400"/> Últimas Consultas
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent className="p-0">
+                      <div className="overflow-x-auto">
+                        <table className="w-full text-sm text-left">
+                          <thead className="bg-gray-50/50 text-gray-500 font-medium border-b border-gray-100">
+                            <tr>
+                              <th className="px-6 py-4">FECHA</th>
+                              <th className="px-6 py-4">PACIENTE</th>
+                              <th className="px-6 py-4">MOTIVO</th>
+                              <th className="px-6 py-4">DIAGNÓSTICO</th>
+                            </tr>
+                          </thead>
+                          <tbody className="divide-y divide-gray-100 bg-white">
+                            {dashboardData.ultimasConsultas?.map((c) => (
+                              <tr key={c.id} className="hover:bg-gray-50 transition-colors">
+                                <td className="px-6 py-4 text-gray-500 font-mono text-xs">{c.fecha}</td>
+                                <td className="px-6 py-4 font-medium text-gray-800">
+                                    {c.paciente ? `${c.paciente.nombre} ${c.paciente.apellido}` : 'Desconocido'}
+                                </td>
+                                <td className="px-6 py-4 text-gray-700">{c.motivo}</td>
+                                <td className="px-6 py-4">
+                                  <span className="px-2.5 py-1 rounded-full text-xs font-medium bg-blue-50 text-blue-700 border border-blue-100 truncate max-w-[200px] block">
+                                    {c.diagnostico}
+                                  </span>
+                                </td>
+                              </tr>
+                            ))}
+                            {(!dashboardData.ultimasConsultas || dashboardData.ultimasConsultas.length === 0) && (
+                                <tr><td colSpan="4" className="text-center py-8 text-gray-400 italic">No hay actividad reciente</td></tr>
+                            )}
+                          </tbody>
+                        </table>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </>
+              )}
+            </div>
+          )}
+
           {/* --- VISTA PACIENTES --- */}
           {activeTab === 'pacientes' && (
             <>
@@ -212,7 +362,7 @@ export default function App() {
 
               <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
                 {pacientes.map((p) => (
-                  <Card key={p.id} className="border-none shadow-sm hover:shadow-lg transition-all duration-200 group">
+                  <Card key={p.id} className="border-none shadow-sm hover:shadow-lg transition-all duration-200 group bg-white">
                     <CardHeader className="flex flex-row items-center gap-4 pb-4">
                        <div className="w-12 h-12 rounded-full bg-primary/10 text-primary flex items-center justify-center text-lg font-bold group-hover:bg-primary group-hover:text-white transition-colors">
                          {p.nombre.charAt(0)}{p.apellido.charAt(0)}
@@ -229,7 +379,7 @@ export default function App() {
                           <User className="w-4 h-4 text-gray-400"/>
                           <span className="text-sm text-gray-600">Paciente registrado</span>
                       </div>
-                      <div className="flex gap-2 pt-2 border-t">
+                      <div className="flex gap-2 pt-2 border-t border-gray-100">
                         <Button className="flex-1 bg-white border border-gray-200 text-gray-700 hover:bg-primary hover:text-white hover:border-primary shadow-sm" size="sm" onClick={() => abrirHistoria(p)}>
                           <FileText className="w-4 h-4 mr-2" /> Historia
                         </Button>
@@ -255,7 +405,7 @@ export default function App() {
 
           {/* --- VISTA NUEVO PACIENTE --- */}
           {activeTab === 'nuevo_paciente' && (
-            <Card className="max-w-3xl mx-auto border-none shadow-md">
+            <Card className="max-w-3xl mx-auto border-none shadow-md bg-white">
               <CardHeader className="border-b bg-gray-50/50 px-8 py-6">
                 <CardTitle className="flex items-center gap-2">
                    <div className="p-2 bg-primary/10 rounded-lg"><User className="w-5 h-5 text-primary"/></div>
@@ -289,7 +439,7 @@ export default function App() {
           {/* --- VISTA ADMIN --- */}
           {activeTab === 'admin_usuarios' && (
             <div className="space-y-6">
-              <Card className="border-none shadow-sm">
+              <Card className="border-none shadow-sm bg-white">
                 <CardHeader><CardTitle>Dar de alta Médico</CardTitle></CardHeader>
                 <CardContent className="flex flex-col md:flex-row gap-4">
                   <Input placeholder="Email del médico" value={nuevoMedicoData.username} onChange={(e) => setNuevoMedicoData({...nuevoMedicoData, username: e.target.value})} />
@@ -298,7 +448,7 @@ export default function App() {
                 </CardContent>
               </Card>
 
-              <Card className="border-none shadow-sm overflow-hidden">
+              <Card className="border-none shadow-sm overflow-hidden bg-white">
                 <div className="overflow-x-auto">
                   <table className="w-full text-sm text-left">
                     <thead className="bg-gray-100/50 text-gray-600 uppercase text-xs font-semibold tracking-wider">

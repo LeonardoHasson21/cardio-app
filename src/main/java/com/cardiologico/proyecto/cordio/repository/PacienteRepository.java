@@ -18,4 +18,6 @@ public interface PacienteRepository extends JpaRepository<Paciente, Long> {
     
     // Buscar por nombre global (Para Admin)
     List<Paciente> findByApellidoContainingIgnoreCase(String apellido);
+
+    long countByMedicoId(Long medicoId);
 }

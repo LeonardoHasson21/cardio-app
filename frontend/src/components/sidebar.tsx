@@ -73,7 +73,7 @@ export function Sidebar({ activeSection, onSectionChange, role, cerrarSesion }) 
               Sistema de Gestión
             </h3>
             <p className="text-[11px] text-sidebar-foreground/60 leading-relaxed">
-              Administre, almacene y consulte historias clínicas de forma segura.
+              Administre, almacene y consulte historias clínicas de forma segura y eficiente. Acceda a los registros médicos de sus pacientes en cualquier momento.
             </p>
           </div>
         </div>
