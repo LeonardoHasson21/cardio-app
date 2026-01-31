@@ -31,8 +31,8 @@ public class SecurityConfig {
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .authorizeHttpRequests(authRequest
                         -> authRequest
-                        .requestMatchers("/api/auth/login").permitAll() // Solo Login es público
-                        .requestMatchers("/api/auth/register").hasRole("ADMIN") // Register solo para Admin (o lo bloqueas del todo)
+                        .requestMatchers("/api/auth/login").permitAll()
+                        .requestMatchers("/api/auth/register").hasAuthority("ADMIN")
                         .anyRequest().authenticated()
                 )
                 .sessionManagement(sessionManager

@@ -26,8 +26,8 @@ public class SeedDataConfig {
             if (usuarioRepository.findByUsername("admin@admin.com").isEmpty()) {
                 Usuario admin = Usuario.builder()
                         .username("admin@admin.com")
-                        .password(passwordEncoder.encode("admin123")) // Contraseña del admin
-                        .role(Role.ADMIN) // <--- ¡Aquí está la magia!
+                        .password(passwordEncoder.encode("admin123"))
+                        .role(Role.ADMIN).enabled(true)
                         .build();
 
                 usuarioRepository.save(admin);
