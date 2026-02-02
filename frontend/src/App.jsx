@@ -511,21 +511,23 @@ export default function App() {
                     
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                       <div className="space-y-2">
-                        <label className="text-sm font-medium text-gray-700">Nombre Completo</label>
+                        <label className="text-sm font-medium text-gray-700">Nombre</label>
                         <Input 
                           className="h-10 bg-gray-50" 
-                          placeholder="Ej: María García López"
+                          placeholder="Ej: María"
                           value={nuevoPaciente.nombre} 
                           onChange={(e) => setNuevoPaciente({...nuevoPaciente, nombre: e.target.value})} 
                           required 
                         />
                       </div>
                       <div className="space-y-2">
-                        <label className="text-sm font-medium text-gray-700">Edad</label>
+                        <label className="text-sm font-medium text-gray-700">Apellido</label>
                         <Input 
                           className="h-10 bg-gray-50" 
-                          placeholder="Ej: 45"
-                          type="number"
+                          placeholder="Ej: García López"
+                          value={nuevoPaciente.apellido} 
+                          onChange={(e) => setNuevoPaciente({...nuevoPaciente, apellido: e.target.value})} 
+                          required 
                         />
                       </div>
                     </div>
@@ -542,10 +544,11 @@ export default function App() {
                         />
                       </div>
                       <div className="space-y-2">
-                        <label className="text-sm font-medium text-gray-700">Teléfono de Contacto</label>
+                        <label className="text-sm font-medium text-gray-700">Edad</label>
                         <Input 
                           className="h-10 bg-gray-50" 
-                          placeholder="Ej: +34 612 345 678"
+                          placeholder="Ej: 45"
+                          type="number"
                         />
                       </div>
                     </div>
@@ -836,7 +839,7 @@ export default function App() {
                   <Button className="w-full shadow-md" onClick={guardarConsulta}>Guardar Evolución</Button>
                 </div>
               </div>
-              <div className="space-y-6"><h4 className="font-semibold text-gray-900 border-b pb-2">Historial</h4>{consultas.map((c) => (<div key={c.id} className="relative pl-6 border-l-2 border-gray-200 pb-6 last:pb-0"><div className="absolute -left-[9px] top-0 w-4 h-4 rounded-full bg-gray-200 border-2 border-white"></div><div className="p-4 rounded-xl border bg-gray-50/50"><div className="flex justify-between items-start mb-2"><div><span className="font-bold text-gray-800 block">{c.motivo}</span><span className="text-xs text-blue-600 font-medium">{c.tipo} • {c.estado}</span></div><span className="text-xs font-mono bg-white px-2 py-1 rounded border text-gray-500">{c.fecha}</span></div><p className="text-sm text-gray-600 mb-2"><span className="font-medium text-primary">Dx:</span> {c.diagnostico}</p>{c.tratamiento && <div className="text-sm text-gray-500 bg-white p-3 rounded-lg border mb-2">{c.tratamiento}</div>}{c.observaciones && <div className="text-sm text-gray-500 bg-amber-50/30 p-2 rounded-lg border border-amber-100 italic">{c.observaciones}</div>}</div></div>))}</div>
+              <div className="space-y-6"><h4 className="font-semibold text-gray-900 border-b pb-2">Historial</h4>{consultas.map((c) => (<div key={c.id} className="relative pl-6 border-l-2 border-gray-200 pb-6 last:pb-0"><div className="absolute -left-[9px] top-0 w-4 h-4 rounded-full bg-gray-200 border-2 border-white"></div><div className="p-4 rounded-xl border bg-gray-50/50 hover:bg-blue-50/30 hover:border-blue-200 transition-all cursor-pointer group" onClick={() => setConsultaParaImprimir(c)}><div className="flex justify-between items-start mb-2"><div className="flex-1"><span className="font-bold text-gray-800 block">{c.motivo}</span><span className="text-xs text-blue-600 font-medium">{c.tipo} • {c.estado}</span></div><div className="flex items-center gap-2"><span className="text-xs font-mono bg-white px-2 py-1 rounded border text-gray-500">{c.fecha}</span><Eye className="w-4 h-4 text-gray-400 group-hover:text-blue-600 transition-colors" /></div></div><p className="text-sm text-gray-600 mb-2"><span className="font-medium text-primary">Dx:</span> {c.diagnostico}</p>{c.tratamiento && <div className="text-sm text-gray-500 bg-white p-3 rounded-lg border mb-2 line-clamp-2">{c.tratamiento}</div>}{c.observaciones && <div className="text-sm text-gray-500 bg-amber-50/30 p-2 rounded-lg border border-amber-100 italic line-clamp-1">{c.observaciones}</div>}<p className="text-xs text-blue-600 mt-2 group-hover:underline">Clic para ver detalles completos</p></div></div>))}</div>
             </div>
           </div>
         </div>
