@@ -453,19 +453,8 @@ export default function App() {
                           <Mail className="w-4 h-4 text-gray-400" />
                           <span className="text-cyan-600">{p.nombre.toLowerCase()}.{p.apellido.toLowerCase()}@email.com</span>
                         </div>
-                      </div>
-
-                      <div className="border-t mt-4 pt-4">
-                        <div className="text-sm text-gray-500 flex justify-between items-center">
-                          <span>DNI: {p.dni}</span>
-                          <Button 
-                            size="sm" 
-                            variant="ghost" 
-                            className="text-cyan-600 hover:text-cyan-700"
-                            onClick={() => abrirHistoria(p)}
-                          >
-                            <Eye className="w-4 h-4 mr-1" /> Ver Historia
-                          </Button>
+                        <div className="flex items-center gap-2 text-sm text-gray-600">
+                          <span className="text-xs">DNI: {p.dni}</span>
                         </div>
                       </div>
 
@@ -764,35 +753,35 @@ export default function App() {
           {/* Contenedor con scroll para pantallas pequeñas */}
           <div className="bg-white w-full max-w-3xl rounded-xl shadow-2xl overflow-hidden flex flex-col max-h-[85vh] print:max-h-none print:shadow-none print:rounded-none print:w-full print:h-full print:overflow-visible">
             
-            <div className="p-4 border-b flex justify-between items-center bg-gray-50 print:hidden shrink-0">
-              <h3 className="font-bold text-lg text-gray-900">Vista Previa</h3>
-              <div className="flex gap-2"><Button variant="outline" onClick={handlePrint} className="gap-2"><Printer className="w-4 h-4"/> Imprimir</Button><Button variant="ghost" size="icon" onClick={() => setConsultaParaImprimir(null)}><X className="w-5 h-5"/></Button></div>
+            <div className="p-3 sm:p-4 border-b flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 sm:gap-2 bg-gray-50 print:hidden shrink-0">
+              <h3 className="font-bold text-base sm:text-lg text-gray-900">Vista Previa</h3>
+              <div className="flex gap-2 w-full sm:w-auto"><Button variant="outline" onClick={handlePrint} className="gap-2 flex-1 sm:flex-initial"><Printer className="w-4 h-4"/> Imprimir</Button><Button variant="ghost" size="icon" onClick={() => setConsultaParaImprimir(null)}><X className="w-5 h-5"/></Button></div>
             </div>
 
-            <div className="p-10 overflow-y-auto print:p-0 print:overflow-visible text-gray-800 font-sans" id="documento-impresion">
-              <div className="flex justify-between items-start border-b-2 border-gray-800 pb-6 mb-8">
-                <div className="flex items-center gap-4"><div className="w-16 h-16 bg-primary text-white rounded-lg flex items-center justify-center print:border print:border-gray-300 print:text-black"><Activity className="w-10 h-10" /></div><div><h1 className="text-2xl font-bold tracking-tight">MediRecord</h1><p className="text-sm text-gray-500">Informe Médico Oficial</p></div></div>
-                <div className="text-right"><p className="font-mono text-lg font-bold">#{consultaParaImprimir.id.toString().padStart(6, '0')}</p><p className="text-sm text-gray-500">{consultaParaImprimir.fecha}</p></div>
+            <div className="p-4 sm:p-10 overflow-y-auto print:p-8 print:overflow-visible text-gray-800 font-sans" id="documento-impresion">
+              <div className="flex flex-col sm:flex-row justify-between items-start border-b-2 border-gray-800 pb-6 mb-8 gap-4 print:flex-row print:gap-0">
+                <div className="flex items-center gap-4"><div className="w-12 h-12 sm:w-16 sm:h-16 bg-primary text-white rounded-lg flex items-center justify-center print:border print:border-gray-300 print:text-black print:w-16 print:h-16"><Activity className="w-8 h-8 sm:w-10 sm:h-10 print:w-10 print:h-10" /></div><div><h1 className="text-xl sm:text-2xl font-bold tracking-tight">MediRecord</h1><p className="text-xs sm:text-sm text-gray-500">Informe Médico Oficial</p></div></div>
+                <div className="text-left sm:text-right"><p className="font-mono text-base sm:text-lg font-bold">#{consultaParaImprimir.id.toString().padStart(6, '0')}</p><p className="text-xs sm:text-sm text-gray-500">{consultaParaImprimir.fecha}</p></div>
               </div>
-              <div className="bg-gray-50 p-6 rounded-lg border border-gray-100 mb-8 print:bg-transparent print:border-gray-300">
+              <div className="bg-gray-50 p-4 sm:p-6 rounded-lg border border-gray-100 mb-8 print:bg-white print:border-gray-300 print:p-6">
                  <h4 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-4">Información del Paciente</h4>
-                 <div className="grid grid-cols-2 gap-8">
-                    <div><p className="text-sm text-gray-500 mb-1">Nombre Completo</p><p className="font-semibold text-lg">{consultaParaImprimir.paciente ? `${consultaParaImprimir.paciente.nombre} ${consultaParaImprimir.paciente.apellido}` : 'No registrado'}</p></div>
-                    <div><p className="text-sm text-gray-500 mb-1">Documento (DNI)</p><p className="font-semibold text-lg">{consultaParaImprimir.paciente?.dni || '---'}</p></div>
+                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-8 print:grid-cols-2 print:gap-8">
+                    <div><p className="text-xs sm:text-sm text-gray-500 mb-1">Nombre Completo</p><p className="font-semibold text-base sm:text-lg print:text-base">{consultaParaImprimir.paciente ? `${consultaParaImprimir.paciente.nombre} ${consultaParaImprimir.paciente.apellido}` : 'No registrado'}</p></div>
+                    <div><p className="text-xs sm:text-sm text-gray-500 mb-1">Documento (DNI)</p><p className="font-semibold text-base sm:text-lg print:text-base">{consultaParaImprimir.paciente?.dni || '---'}</p></div>
                  </div>
               </div>
-              <div className="space-y-8">
-                 <div className="grid grid-cols-2 gap-4 mb-4"><div><h4 className="text-xs font-bold text-gray-400 uppercase">Tipo</h4><p className="font-medium">{consultaParaImprimir.tipo}</p></div><div><h4 className="text-xs font-bold text-gray-400 uppercase">Estado</h4><p className="font-medium">{consultaParaImprimir.estado}</p></div></div><hr className="border-gray-100"/>
-                 <div><h4 className="text-sm font-bold text-primary border-b border-primary/20 pb-2 mb-3">Motivo de Consulta</h4><p className="leading-relaxed text-gray-700">{consultaParaImprimir.motivo}</p></div>
-                 <div><h4 className="text-sm font-bold text-primary border-b border-primary/20 pb-2 mb-3">Diagnóstico</h4><p className="leading-relaxed text-gray-700 font-medium">{consultaParaImprimir.diagnostico}</p></div>
-                 <div><h4 className="text-sm font-bold text-primary border-b border-primary/20 pb-2 mb-3">Tratamiento Indicado</h4><div className="bg-blue-50/50 p-4 rounded-lg border border-blue-100 print:bg-transparent print:border-gray-200"><p className="leading-relaxed text-gray-700 whitespace-pre-wrap">{consultaParaImprimir.tratamiento || "No se especificó tratamiento."}</p></div></div>
+              <div className="space-y-6 sm:space-y-8 print:space-y-6">
+                 <div className="grid grid-cols-2 gap-3 sm:gap-4 mb-4 print:gap-4"><div><h4 className="text-xs font-bold text-gray-400 uppercase">Tipo</h4><p className="font-medium text-sm sm:text-base print:text-sm">{consultaParaImprimir.tipo}</p></div><div><h4 className="text-xs font-bold text-gray-400 uppercase">Estado</h4><p className="font-medium text-sm sm:text-base print:text-sm">{consultaParaImprimir.estado}</p></div></div><hr className="border-gray-100 print:border-gray-300"/>
+                 {consultaParaImprimir.motivo && <div><h4 className="text-sm font-bold text-primary border-b border-primary/20 pb-2 mb-3 print:text-black print:border-black/20">Motivo de Consulta</h4><p className="leading-relaxed text-gray-700 text-sm sm:text-base print:text-sm">{consultaParaImprimir.motivo}</p></div>}
+                 {consultaParaImprimir.diagnostico && <div><h4 className="text-sm font-bold text-primary border-b border-primary/20 pb-2 mb-3 print:text-black print:border-black/20">Diagnóstico</h4><p className="leading-relaxed text-gray-700 font-medium text-sm sm:text-base print:text-sm">{consultaParaImprimir.diagnostico}</p></div>}
+                 {consultaParaImprimir.tratamiento && <div><h4 className="text-sm font-bold text-primary border-b border-primary/20 pb-2 mb-3 print:text-black print:border-black/20">Tratamiento Indicado</h4><div className="bg-blue-50/50 p-3 sm:p-4 rounded-lg border border-blue-100 print:bg-white print:border-gray-300 print:p-4"><p className="leading-relaxed text-gray-700 whitespace-pre-wrap text-sm sm:text-base print:text-sm">{consultaParaImprimir.tratamiento}</p></div></div>}
                  {consultaParaImprimir.observaciones && (
-                   <div><h4 className="text-sm font-bold text-primary border-b border-primary/20 pb-2 mb-3">Observaciones Adicionales</h4><div className="bg-amber-50/30 p-4 rounded-lg border border-amber-100 print:bg-transparent print:border-gray-200"><p className="leading-relaxed text-gray-700 whitespace-pre-wrap italic">{consultaParaImprimir.observaciones}</p></div></div>
+                   <div><h4 className="text-sm font-bold text-primary border-b border-primary/20 pb-2 mb-3 print:text-black print:border-black/20">Observaciones Adicionales</h4><div className="bg-amber-50/30 p-3 sm:p-4 rounded-lg border border-amber-100 print:bg-white print:border-gray-300 print:p-4"><p className="leading-relaxed text-gray-700 whitespace-pre-wrap italic text-sm sm:text-base print:text-sm">{consultaParaImprimir.observaciones}</p></div></div>
                  )}
               </div>
-              <div className="mt-20 pt-8 border-t border-gray-200 flex justify-between items-end print:mt-32">
+              <div className="mt-12 sm:mt-20 pt-6 sm:pt-8 border-t border-gray-200 flex flex-col sm:flex-row justify-between items-start sm:items-end gap-4 print:mt-24 print:flex-row print:items-end print:gap-0">
                  <div className="text-xs text-gray-400"><p>Generado por MediRecord System</p><p>{new Date().toLocaleString()}</p></div>
-                 <div className="text-center"><div className="w-48 h-px bg-gray-800 mb-2"></div><p className="text-sm font-semibold">Firma del Médico</p></div>
+                 <div className="text-center"><div className="w-32 sm:w-48 h-px bg-gray-800 mb-2 print:w-48"></div><p className="text-xs sm:text-sm font-semibold">Firma del Médico</p></div>
               </div>
             </div>
           </div>
