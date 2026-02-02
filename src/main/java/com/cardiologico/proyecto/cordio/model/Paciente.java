@@ -54,11 +54,15 @@ public class Paciente {
     private String antecedentesFamiliares;
 
     @OneToMany(mappedBy = "paciente", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonIgnore
     private List<Consulta> consultas = new ArrayList<>();
     
     @ManyToOne
     @JoinColumn(name = "usuario_id")
     @JsonIgnore 
     private Usuario medico;
+
+    
+
 
 }
