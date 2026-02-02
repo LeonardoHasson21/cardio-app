@@ -60,11 +60,12 @@ public class PacienteController {
         pacienteRepository.deleteById(id);
     }
 
-    // 4. BUSCADOR (Por apellido y solo míos)
+    // 4. BUSCADOR (Por nombre o apellido y solo míos)
     @GetMapping("/buscar")
     public List<Paciente> buscarPacientes(@RequestParam String query) {
         Usuario medico = getUsuarioLogueado();
-        return pacienteRepository.findByMedicoIdAndApellidoContainingIgnoreCase(medico.getId(), query);
+        return pacienteRepository.findByMedicoIdAndNombreContainingIgnoreCaseOrMedicoIdAndApellidoContainingIgnoreCase(
+            medico.getId(), query, medico.getId(), query);
     }
 
     // 5. EDITAR / ACTUALIZAR (¡NUEVO!)

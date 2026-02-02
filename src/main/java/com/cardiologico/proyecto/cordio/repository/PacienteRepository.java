@@ -13,8 +13,8 @@ public interface PacienteRepository extends JpaRepository<Paciente, Long> {
 // Buscar pacientes de un médico específico
     List<Paciente> findByMedicoId(Long medicoId);
 
-    // Buscar por nombre PERO solo dentro de mis pacientes (Buscador Seguro)
-    List<Paciente> findByMedicoIdAndApellidoContainingIgnoreCase(Long medicoId, String apellido);
+    // Buscar por nombre o apellido PERO solo dentro de mis pacientes (Buscador Seguro)
+    List<Paciente> findByMedicoIdAndNombreContainingIgnoreCaseOrMedicoIdAndApellidoContainingIgnoreCase(Long medicoId1, String nombre, Long medicoId2, String apellido);
     
     // Buscar por nombre global (Para Admin)
     List<Paciente> findByApellidoContainingIgnoreCase(String apellido);

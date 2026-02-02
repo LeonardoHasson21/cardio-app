@@ -2,9 +2,7 @@ package com.cardiologico.proyecto.cordio.model;
 
 import java.time.LocalDate;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-
-import jakarta.persistence.Column; // <--- IMPORTANTE
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
@@ -34,7 +32,6 @@ public class Consulta {
 
     @ManyToOne(fetch=FetchType.EAGER)
     @JoinColumn(name = "paciente_id")
-    @JsonIgnore
     private Paciente paciente;
 
     public Long getId() { return id; }
