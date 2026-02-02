@@ -9,7 +9,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 
 import { 
   Plus, Search, Activity, Trash2, Edit, FileText, User, Menu, X, Lock, Unlock,
-  Users, Calendar, TrendingUp, Clock, Printer, ChevronDown, Eye
+  Users, Calendar, TrendingUp, Clock, Printer, ChevronDown, Eye, Mail
 } from "lucide-react"
 
 const API_URL = 'https://cardio-app-production.up.railway.app/api';
@@ -446,11 +446,11 @@ export default function App() {
                       
                       <div className="space-y-2 border-t pt-4">
                         <div className="flex items-center gap-2 text-sm text-gray-600">
-                          <span>📞</span>
+                          <User className="w-4 h-4 text-gray-400" />
                           <span>+34 612 345 678</span>
                         </div>
                         <div className="flex items-center gap-2 text-sm text-gray-600">
-                          <span>✉️</span>
+                          <Mail className="w-4 h-4 text-gray-400" />
                           <span className="text-cyan-600">{p.nombre.toLowerCase()}.{p.apellido.toLowerCase()}@email.com</span>
                         </div>
                       </div>
@@ -783,6 +783,9 @@ export default function App() {
                  <div><h4 className="text-sm font-bold text-primary border-b border-primary/20 pb-2 mb-3">Motivo de Consulta</h4><p className="leading-relaxed text-gray-700">{consultaParaImprimir.motivo}</p></div>
                  <div><h4 className="text-sm font-bold text-primary border-b border-primary/20 pb-2 mb-3">Diagnóstico</h4><p className="leading-relaxed text-gray-700 font-medium">{consultaParaImprimir.diagnostico}</p></div>
                  <div><h4 className="text-sm font-bold text-primary border-b border-primary/20 pb-2 mb-3">Tratamiento Indicado</h4><div className="bg-blue-50/50 p-4 rounded-lg border border-blue-100 print:bg-transparent print:border-gray-200"><p className="leading-relaxed text-gray-700 whitespace-pre-wrap">{consultaParaImprimir.tratamiento || "No se especificó tratamiento."}</p></div></div>
+                 {consultaParaImprimir.observaciones && (
+                   <div><h4 className="text-sm font-bold text-primary border-b border-primary/20 pb-2 mb-3">Observaciones Adicionales</h4><div className="bg-amber-50/30 p-4 rounded-lg border border-amber-100 print:bg-transparent print:border-gray-200"><p className="leading-relaxed text-gray-700 whitespace-pre-wrap italic">{consultaParaImprimir.observaciones}</p></div></div>
+                 )}
               </div>
               <div className="mt-20 pt-8 border-t border-gray-200 flex justify-between items-end print:mt-32">
                  <div className="text-xs text-gray-400"><p>Generado por MediRecord System</p><p>{new Date().toLocaleString()}</p></div>
@@ -829,10 +832,11 @@ export default function App() {
                   <Input placeholder="Motivo" className="bg-white" value={nuevaConsulta.motivo} onChange={(e)=>setNuevaConsulta({...nuevaConsulta, motivo: e.target.value})} />
                   <Input placeholder="Diagnóstico" className="bg-white" value={nuevaConsulta.diagnostico} onChange={(e)=>setNuevaConsulta({...nuevaConsulta, diagnostico: e.target.value})} />
                   <textarea className="flex w-full rounded-md border border-input bg-white px-3 py-2 text-sm shadow-sm focus:ring-1 focus:ring-ring" rows={3} placeholder="Tratamiento..." value={nuevaConsulta.tratamiento} onChange={(e)=>setNuevaConsulta({...nuevaConsulta, tratamiento: e.target.value})} />
+                  <textarea className="flex w-full rounded-md border border-input bg-white px-3 py-2 text-sm shadow-sm focus:ring-1 focus:ring-ring" rows={2} placeholder="Observaciones adicionales..." value={nuevaConsulta.observaciones} onChange={(e)=>setNuevaConsulta({...nuevaConsulta, observaciones: e.target.value})} />
                   <Button className="w-full shadow-md" onClick={guardarConsulta}>Guardar Evolución</Button>
                 </div>
               </div>
-              <div className="space-y-6"><h4 className="font-semibold text-gray-900 border-b pb-2">Historial</h4>{consultas.map((c) => (<div key={c.id} className="relative pl-6 border-l-2 border-gray-200 pb-6 last:pb-0"><div className="absolute -left-[9px] top-0 w-4 h-4 rounded-full bg-gray-200 border-2 border-white"></div><div className="p-4 rounded-xl border bg-gray-50/50"><div className="flex justify-between items-start mb-2"><div><span className="font-bold text-gray-800 block">{c.motivo}</span><span className="text-xs text-blue-600 font-medium">{c.tipo} • {c.estado}</span></div><span className="text-xs font-mono bg-white px-2 py-1 rounded border text-gray-500">{c.fecha}</span></div><p className="text-sm text-gray-600 mb-2"><span className="font-medium text-primary">Dx:</span> {c.diagnostico}</p>{c.tratamiento && <div className="text-sm text-gray-500 bg-white p-3 rounded-lg border italic">{c.tratamiento}</div>}</div></div>))}</div>
+              <div className="space-y-6"><h4 className="font-semibold text-gray-900 border-b pb-2">Historial</h4>{consultas.map((c) => (<div key={c.id} className="relative pl-6 border-l-2 border-gray-200 pb-6 last:pb-0"><div className="absolute -left-[9px] top-0 w-4 h-4 rounded-full bg-gray-200 border-2 border-white"></div><div className="p-4 rounded-xl border bg-gray-50/50"><div className="flex justify-between items-start mb-2"><div><span className="font-bold text-gray-800 block">{c.motivo}</span><span className="text-xs text-blue-600 font-medium">{c.tipo} • {c.estado}</span></div><span className="text-xs font-mono bg-white px-2 py-1 rounded border text-gray-500">{c.fecha}</span></div><p className="text-sm text-gray-600 mb-2"><span className="font-medium text-primary">Dx:</span> {c.diagnostico}</p>{c.tratamiento && <div className="text-sm text-gray-500 bg-white p-3 rounded-lg border mb-2">{c.tratamiento}</div>}{c.observaciones && <div className="text-sm text-gray-500 bg-amber-50/30 p-2 rounded-lg border border-amber-100 italic">{c.observaciones}</div>}</div></div>))}</div>
             </div>
           </div>
         </div>
