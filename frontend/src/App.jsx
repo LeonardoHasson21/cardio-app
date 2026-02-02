@@ -293,30 +293,29 @@ export default function App() {
   // LANDING PAGE
   if (showLanding && !token) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-background via-background to-primary/5 relative overflow-hidden">
-        {/* Animated Background Elements */}
-        <div className="absolute inset-0 overflow-hidden pointer-events-none">
+      <div className="min-h-screen bg-background relative overflow-hidden">
+        {/* Animated Background Elements - Sutiles */}
+        <div className="absolute inset-0 overflow-hidden pointer-events-none opacity-30">
           <div className="absolute top-20 left-10 w-72 h-72 bg-primary/10 rounded-full blur-3xl animate-pulse"></div>
-          <div className="absolute bottom-20 right-10 w-96 h-96 bg-accent/10 rounded-full blur-3xl animate-pulse" style={{animationDelay: '1s'}}></div>
-          <div className="absolute top-1/2 left-1/2 w-64 h-64 bg-chart-3/10 rounded-full blur-3xl animate-pulse" style={{animationDelay: '2s'}}></div>
+          <div className="absolute bottom-20 right-10 w-96 h-96 bg-primary/10 rounded-full blur-3xl animate-pulse" style={{animationDelay: '1s'}}></div>
         </div>
 
         {/* Header */}
-        <header className="fixed top-0 left-0 right-0 z-50 bg-card/90 backdrop-blur-xl border-b border-border/50 shadow-sm animate-in fade-in slide-in-from-top duration-700">
+        <header className="fixed top-0 left-0 right-0 z-50 bg-card/80 backdrop-blur-md border-b border-border shadow-sm animate-in fade-in slide-in-from-top duration-700">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="flex items-center justify-between h-16">
-              <div className="flex items-center gap-3 group cursor-pointer">
-                <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary to-primary/80 flex items-center justify-center shadow-lg shadow-primary/25 group-hover:shadow-primary/40 transition-all duration-300 group-hover:scale-110">
-                  <Activity className="w-5 h-5 text-primary-foreground animate-pulse" />
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-primary flex items-center justify-center hover:scale-110 transition-transform duration-300">
+                  <Activity className="w-5 h-5 text-primary-foreground" />
                 </div>
-                <span className="text-xl font-bold bg-gradient-to-r from-foreground to-foreground/70 bg-clip-text text-transparent">MediRecord</span>
+                <span className="text-xl font-semibold text-foreground">MediRecord</span>
               </div>
               <nav className="hidden md:flex items-center gap-8">
-                <a href="#caracteristicas" className="text-sm font-medium text-muted-foreground hover:text-primary transition-all duration-300 hover:scale-105">Características</a>
-                <a href="#beneficios" className="text-sm font-medium text-muted-foreground hover:text-primary transition-all duration-300 hover:scale-105">Beneficios</a>
-                <a href="#seguridad" className="text-sm font-medium text-muted-foreground hover:text-primary transition-all duration-300 hover:scale-105">Seguridad</a>
+                <a href="#caracteristicas" className="text-sm text-muted-foreground hover:text-foreground transition-colors">Características</a>
+                <a href="#beneficios" className="text-sm text-muted-foreground hover:text-foreground transition-colors">Beneficios</a>
+                <a href="#seguridad" className="text-sm text-muted-foreground hover:text-foreground transition-colors">Seguridad</a>
               </nav>
-              <Button onClick={() => setShowLanding(false)} className="shadow-lg shadow-primary/25 hover:shadow-primary/40 transition-all duration-300 hover:scale-105">
+              <Button onClick={() => setShowLanding(false)}>
                 Acceder al Sistema<ChevronRight className="w-4 h-4 ml-1" />
               </Button>
             </div>
@@ -328,13 +327,13 @@ export default function App() {
           <div className="max-w-7xl mx-auto">
             <div className="grid lg:grid-cols-2 gap-12 items-center">
               <div className="space-y-8 animate-in fade-in slide-in-from-left duration-1000">
-                <div className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-gradient-to-r from-primary/15 to-accent/15 text-primary text-sm font-semibold border border-primary/20 shadow-lg shadow-primary/10 hover:shadow-primary/20 transition-all duration-300 hover:scale-105 cursor-pointer">
-                  <Heart className="w-4 h-4 animate-pulse" />
+                <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 text-primary text-sm font-medium">
+                  <Heart className="w-4 h-4" />
                   Sistema de Gestión Médica
                 </div>
-                <h1 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold text-foreground leading-tight">
+                <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-foreground leading-tight">
                   Gestiona tus historias clínicas de forma{" "}
-                  <span className="bg-gradient-to-r from-primary via-accent to-primary bg-clip-text text-transparent animate-gradient">
+                  <span className="text-primary">
                     simple y segura
                   </span>
                 </h1>
@@ -342,64 +341,64 @@ export default function App() {
                   MediRecord es tu plataforma integral para almacenar, organizar y acceder a historias clínicas de pacientes. Diseñado para profesionales de la salud que buscan eficiencia y seguridad.
                 </p>
                 <div className="flex flex-col sm:flex-row gap-4">
-                  <Button size="lg" className="w-full sm:w-auto text-base px-8 shadow-xl shadow-primary/30 hover:shadow-primary/50 transition-all duration-300 hover:scale-105 bg-gradient-to-r from-primary to-primary/90" onClick={() => setShowLanding(false)}>
+                  <Button size="lg" className="w-full sm:w-auto text-base px-8" onClick={() => setShowLanding(false)}>
                     Comenzar Ahora<ChevronRight className="w-5 h-5 ml-2" />
                   </Button>
-                  <Button variant="outline" size="lg" className="w-full sm:w-auto text-base px-8 border-2 hover:border-primary hover:bg-primary/5 transition-all duration-300 hover:scale-105" onClick={() => document.getElementById('caracteristicas').scrollIntoView({behavior: 'smooth'})}>
+                  <Button variant="outline" size="lg" className="w-full sm:w-auto text-base px-8" onClick={() => document.getElementById('caracteristicas').scrollIntoView({behavior: 'smooth'})}>
                     Conocer más
                   </Button>
                 </div>
                 <div className="flex flex-wrap items-center gap-6 sm:gap-8 pt-4">
-                  <div className="text-center group cursor-pointer">
-                    <p className="text-3xl font-bold bg-gradient-to-br from-primary to-accent bg-clip-text text-transparent group-hover:scale-110 transition-transform duration-300">10k+</p>
+                  <div className="text-center">
+                    <p className="text-3xl font-bold text-foreground">10k+</p>
                     <p className="text-sm text-muted-foreground">Historias Gestionadas</p>
                   </div>
-                  <div className="w-px h-12 bg-gradient-to-b from-transparent via-border to-transparent" />
-                  <div className="text-center group cursor-pointer">
-                    <p className="text-3xl font-bold bg-gradient-to-br from-accent to-chart-3 bg-clip-text text-transparent group-hover:scale-110 transition-transform duration-300">500+</p>
+                  <div className="w-px h-12 bg-border" />
+                  <div className="text-center">
+                    <p className="text-3xl font-bold text-foreground">500+</p>
                     <p className="text-sm text-muted-foreground">Profesionales</p>
                   </div>
-                  <div className="w-px h-12 bg-gradient-to-b from-transparent via-border to-transparent" />
-                  <div className="text-center group cursor-pointer">
-                    <p className="text-3xl font-bold bg-gradient-to-br from-chart-3 to-primary bg-clip-text text-transparent group-hover:scale-110 transition-transform duration-300">99.9%</p>
+                  <div className="w-px h-12 bg-border" />
+                  <div className="text-center">
+                    <p className="text-3xl font-bold text-foreground">99.9%</p>
                     <p className="text-sm text-muted-foreground">Disponibilidad</p>
                   </div>
                 </div>
               </div>
               <div className="relative animate-in fade-in slide-in-from-right duration-1000 delay-300">
-                <div className="absolute inset-0 bg-gradient-to-br from-primary/30 via-accent/20 to-chart-3/30 rounded-3xl blur-3xl animate-pulse"></div>
-                <Card className="relative overflow-hidden border-2 border-primary/20 shadow-2xl hover:shadow-primary/20 transition-all duration-500 hover:scale-[1.02]">
+                <div className="absolute inset-0 bg-primary/10 rounded-3xl blur-3xl"></div>
+                <Card className="relative overflow-hidden border-2 hover:shadow-lg transition-shadow duration-300">
                   <CardContent className="p-0">
-                    <div className="bg-gradient-to-r from-sidebar via-sidebar to-sidebar/95 p-4 flex items-center gap-3">
+                    <div className="bg-sidebar p-4 flex items-center gap-3">
                       <div className="flex gap-1.5">
-                        <div className="w-3 h-3 rounded-full bg-red-500 shadow-lg shadow-red-500/50 animate-pulse" />
-                        <div className="w-3 h-3 rounded-full bg-yellow-500 shadow-lg shadow-yellow-500/50 animate-pulse" style={{animationDelay: '0.3s'}} />
-                        <div className="w-3 h-3 rounded-full bg-green-500 shadow-lg shadow-green-500/50 animate-pulse" style={{animationDelay: '0.6s'}} />
+                        <div className="w-3 h-3 rounded-full bg-red-500" />
+                        <div className="w-3 h-3 rounded-full bg-yellow-500" />
+                        <div className="w-3 h-3 rounded-full bg-green-500" />
                       </div>
                       <span className="text-sm font-medium text-sidebar-foreground/80">MediRecord Dashboard</span>
                     </div>
-                    <div className="p-6 space-y-4 bg-gradient-to-br from-background to-muted/30">
-                      <div className="flex items-center gap-4 p-4 bg-gradient-to-r from-muted to-muted/50 rounded-xl shadow-sm hover:shadow-md transition-all duration-300 hover:scale-[1.02]">
-                        <div className="w-12 h-12 rounded-full bg-gradient-to-br from-primary to-primary/70 flex items-center justify-center shadow-lg shadow-primary/30"><Users className="w-6 h-6 text-primary-foreground" /></div>
+                    <div className="p-6 space-y-4 bg-muted/10">
+                      <div className="flex items-center gap-4 p-4 bg-muted rounded-xl hover:shadow-md transition-shadow">
+                        <div className="w-12 h-12 rounded-full bg-primary flex items-center justify-center"><Users className="w-6 h-6 text-primary-foreground" /></div>
                         <div className="flex-1"><p className="font-semibold text-foreground">María García López</p><p className="text-sm text-muted-foreground">ID: PAC-2024-0156</p></div>
-                        <div className="px-3 py-1 rounded-full bg-gradient-to-r from-accent/20 to-accent/10 text-accent text-xs font-semibold border border-accent/20 shadow-sm">Activo</div>
+                        <div className="px-3 py-1 rounded-full bg-accent/10 text-accent text-xs font-semibold border border-accent/20">Activo</div>
                       </div>
                       <div className="grid grid-cols-2 gap-4">
-                        <div className="p-4 bg-gradient-to-br from-muted to-muted/50 rounded-xl shadow-sm hover:shadow-md transition-all duration-300 hover:scale-105 cursor-pointer group">
-                          <p className="text-2xl font-bold bg-gradient-to-br from-primary to-accent bg-clip-text text-transparent group-hover:scale-110 transition-transform duration-300">24</p>
+                        <div className="p-4 bg-muted rounded-xl hover:shadow-md transition-shadow">
+                          <p className="text-2xl font-bold text-primary">24</p>
                           <p className="text-sm text-muted-foreground">Consultas</p>
                         </div>
-                        <div className="p-4 bg-gradient-to-br from-muted to-muted/50 rounded-xl shadow-sm hover:shadow-md transition-all duration-300 hover:scale-105 cursor-pointer group">
-                          <p className="text-2xl font-bold bg-gradient-to-br from-accent to-chart-3 bg-clip-text text-transparent group-hover:scale-110 transition-transform duration-300">3</p>
+                        <div className="p-4 bg-muted rounded-xl hover:shadow-md transition-shadow">
+                          <p className="text-2xl font-bold text-accent">3</p>
                           <p className="text-sm text-muted-foreground">Tratamientos</p>
                         </div>
                       </div>
                       <div className="space-y-2">
-                        <div className="flex items-center justify-between p-3 bg-gradient-to-r from-muted to-muted/50 rounded-lg shadow-sm hover:shadow-md transition-all duration-300">
+                        <div className="flex items-center justify-between p-3 bg-muted rounded-lg hover:shadow-md transition-shadow">
                           <span className="text-sm font-medium text-foreground">Última consulta</span>
                           <span className="text-sm text-muted-foreground">15 Ene 2026</span>
                         </div>
-                        <div className="flex items-center justify-between p-3 bg-gradient-to-r from-primary/10 to-primary/5 rounded-lg shadow-sm hover:shadow-md transition-all duration-300 border border-primary/20">
+                        <div className="flex items-center justify-between p-3 bg-primary/5 rounded-lg hover:shadow-md transition-shadow border border-primary/20">
                           <span className="text-sm font-medium text-foreground">Próxima cita</span>
                           <span className="text-sm text-primary font-bold">22 Feb 2026</span>
                         </div>
@@ -413,20 +412,20 @@ export default function App() {
         </section>
 
         {/* Features Section */}
-        <section id="caracteristicas" className="relative py-20 px-4 sm:px-6 lg:px-8 bg-gradient-to-b from-muted/30 to-background">
+        <section id="caracteristicas" className="relative py-20 px-4 sm:px-6 lg:px-8 bg-muted/10">
           <div className="max-w-7xl mx-auto">
             <div className="text-center mb-16 animate-in fade-in slide-in-from-bottom duration-1000">
               <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 text-primary text-sm font-semibold mb-4 border border-primary/20">
                 <FileText className="w-4 h-4" />
                 Características Principales
               </div>
-              <h2 className="text-3xl sm:text-4xl font-extrabold text-foreground mb-4">Todo lo que necesitas para gestionar historias clínicas</h2>
+              <h2 className="text-3xl sm:text-4xl font-bold text-foreground mb-4">Todo lo que necesitas para gestionar historias clínicas</h2>
               <p className="text-lg text-muted-foreground max-w-2xl mx-auto">Herramientas poderosas diseñadas específicamente para profesionales de la salud</p>
             </div>
             <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-              <Card className="group hover:shadow-2xl hover:shadow-primary/10 transition-all duration-500 hover:-translate-y-2 border-2 border-transparent hover:border-primary/20 bg-gradient-to-br from-card to-card/50 animate-in fade-in slide-in-from-bottom duration-700 delay-100">
+              <Card className="group hover:shadow-lg transition-all duration-300 hover:-translate-y-1 animate-in fade-in slide-in-from-bottom duration-700 delay-100">
                 <CardContent className="p-6">
-                  <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center mb-5 group-hover:scale-110 group-hover:rotate-3 transition-all duration-300 shadow-xl shadow-blue-500/30">
+                  <div className="w-16 h-16 rounded-2xl bg-blue-500 flex items-center justify-center mb-5 group-hover:scale-110 transition-transform duration-300">
                     <FileText className="w-8 h-8 text-white" />
                   </div>
                   <h3 className="text-xl font-bold text-foreground mb-3 group-hover:text-primary transition-colors">
@@ -438,9 +437,9 @@ export default function App() {
                 </CardContent>
               </Card>
 
-              <Card className="group hover:shadow-2xl hover:shadow-accent/10 transition-all duration-500 hover:-translate-y-2 border-2 border-transparent hover:border-accent/20 bg-gradient-to-br from-card to-card/50 animate-in fade-in slide-in-from-bottom duration-700 delay-200">
+              <Card className="group hover:shadow-lg transition-all duration-300 hover:-translate-y-1 animate-in fade-in slide-in-from-bottom duration-700 delay-200">
                 <CardContent className="p-6">
-                  <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-emerald-500 to-emerald-600 flex items-center justify-center mb-5 group-hover:scale-110 group-hover:rotate-3 transition-all duration-300 shadow-xl shadow-emerald-500/30">
+                  <div className="w-16 h-16 rounded-2xl bg-emerald-500 flex items-center justify-center mb-5 group-hover:scale-110 transition-transform duration-300">
                     <ClipboardList className="w-8 h-8 text-white" />
                   </div>
                   <h3 className="text-xl font-bold text-foreground mb-3 group-hover:text-accent transition-colors">
@@ -452,9 +451,9 @@ export default function App() {
                 </CardContent>
               </Card>
 
-              <Card className="group hover:shadow-2xl hover:shadow-purple-500/10 transition-all duration-500 hover:-translate-y-2 border-2 border-transparent hover:border-purple-500/20 bg-gradient-to-br from-card to-card/50 animate-in fade-in slide-in-from-bottom duration-700 delay-300">
+              <Card className="group hover:shadow-lg transition-all duration-300 hover:-translate-y-1 animate-in fade-in slide-in-from-bottom duration-700 delay-300">
                 <CardContent className="p-6">
-                  <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-purple-500 to-purple-600 flex items-center justify-center mb-5 group-hover:scale-110 group-hover:rotate-3 transition-all duration-300 shadow-xl shadow-purple-500/30">
+                  <div className="w-16 h-16 rounded-2xl bg-purple-500 flex items-center justify-center mb-5 group-hover:scale-110 transition-transform duration-300">
                     <Search className="w-8 h-8 text-white" />
                   </div>
                   <h3 className="text-xl font-bold text-foreground mb-3 group-hover:text-purple-600 transition-colors">
@@ -466,9 +465,9 @@ export default function App() {
                 </CardContent>
               </Card>
 
-              <Card className="group hover:shadow-2xl hover:shadow-cyan-500/10 transition-all duration-500 hover:-translate-y-2 border-2 border-transparent hover:border-cyan-500/20 bg-gradient-to-br from-card to-card/50 animate-in fade-in slide-in-from-bottom duration-700 delay-400">
+              <Card className="group hover:shadow-lg transition-all duration-300 hover:-translate-y-1 animate-in fade-in slide-in-from-bottom duration-700 delay-400">
                 <CardContent className="p-6">
-                  <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-cyan-500 to-cyan-600 flex items-center justify-center mb-5 group-hover:scale-110 group-hover:rotate-3 transition-all duration-300 shadow-xl shadow-cyan-500/30">
+                  <div className="w-16 h-16 rounded-2xl bg-cyan-500 flex items-center justify-center mb-5 group-hover:scale-110 transition-transform duration-300">
                     <Users className="w-8 h-8 text-white" />
                   </div>
                   <h3 className="text-xl font-bold text-foreground mb-3 group-hover:text-cyan-600 transition-colors">
@@ -480,9 +479,9 @@ export default function App() {
                 </CardContent>
               </Card>
 
-              <Card className="group hover:shadow-2xl hover:shadow-orange-500/10 transition-all duration-500 hover:-translate-y-2 border-2 border-transparent hover:border-orange-500/20 bg-gradient-to-br from-card to-card/50 animate-in fade-in slide-in-from-bottom duration-700 delay-500">
+              <Card className="group hover:shadow-lg transition-all duration-300 hover:-translate-y-1 animate-in fade-in slide-in-from-bottom duration-700 delay-500">
                 <CardContent className="p-6">
-                  <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-orange-500 to-orange-600 flex items-center justify-center mb-5 group-hover:scale-110 group-hover:rotate-3 transition-all duration-300 shadow-xl shadow-orange-500/30">
+                  <div className="w-16 h-16 rounded-2xl bg-orange-500 flex items-center justify-center mb-5 group-hover:scale-110 transition-transform duration-300">
                     <Clock className="w-8 h-8 text-white" />
                   </div>
                   <h3 className="text-xl font-bold text-foreground mb-3 group-hover:text-orange-600 transition-colors">
@@ -494,9 +493,9 @@ export default function App() {
                 </CardContent>
               </Card>
 
-              <Card className="group hover:shadow-2xl hover:shadow-pink-500/10 transition-all duration-500 hover:-translate-y-2 border-2 border-transparent hover:border-pink-500/20 bg-gradient-to-br from-card to-card/50 animate-in fade-in slide-in-from-bottom duration-700 delay-600">
+              <Card className="group hover:shadow-lg transition-all duration-300 hover:-translate-y-1 animate-in fade-in slide-in-from-bottom duration-700 delay-600">
                 <CardContent className="p-6">
-                  <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-pink-500 to-pink-600 flex items-center justify-center mb-5 group-hover:scale-110 group-hover:rotate-3 transition-all duration-300 shadow-xl shadow-pink-500/30">
+                  <div className="w-16 h-16 rounded-2xl bg-pink-500 flex items-center justify-center mb-5 group-hover:scale-110 transition-transform duration-300">
                     <Activity className="w-8 h-8 text-white" />
                   </div>
                   <h3 className="text-xl font-bold text-foreground mb-3 group-hover:text-pink-600 transition-colors">
@@ -512,8 +511,7 @@ export default function App() {
         </section>
 
         {/* Benefits Section */}
-        <section id="beneficios" className="relative py-20 px-4 sm:px-6 lg:px-8 overflow-hidden">
-          <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-accent/5 pointer-events-none"></div>
+        <section id="beneficios" className="relative py-20 px-4 sm:px-6 lg:px-8">
           <div className="max-w-7xl mx-auto relative">
             <div className="grid lg:grid-cols-2 gap-16 items-center">
               <div className="space-y-8 animate-in fade-in slide-in-from-left duration-1000">
@@ -521,28 +519,28 @@ export default function App() {
                   <TrendingUp className="w-4 h-4" />
                   Ventajas Competitivas
                 </div>
-                <h2 className="text-3xl sm:text-4xl font-extrabold text-foreground">Beneficios que transformarán tu práctica médica</h2>
+                <h2 className="text-3xl sm:text-4xl font-bold text-foreground">Beneficios que transformarán tu práctica médica</h2>
                 <div className="space-y-5">
                   <div className="flex gap-4 group hover:translate-x-2 transition-transform duration-300">
-                    <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center shrink-0 shadow-lg shadow-blue-500/30 group-hover:scale-110 transition-transform duration-300">
+                    <div className="w-12 h-12 rounded-xl bg-blue-500 flex items-center justify-center shrink-0 group-hover:scale-110 transition-transform duration-300">
                       <Clock className="w-6 h-6 text-white" />
                     </div>
                     <div><h3 className="font-bold text-foreground mb-1 text-lg">Ahorra tiempo</h3><p className="text-muted-foreground">Reduce el tiempo de documentación hasta un 60% con formularios optimizados y autocompletado inteligente.</p></div>
                   </div>
                   <div className="flex gap-4 group hover:translate-x-2 transition-transform duration-300">
-                    <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-emerald-500 to-emerald-600 flex items-center justify-center shrink-0 shadow-lg shadow-emerald-500/30 group-hover:scale-110 transition-transform duration-300">
+                    <div className="w-12 h-12 rounded-xl bg-emerald-500 flex items-center justify-center shrink-0 group-hover:scale-110 transition-transform duration-300">
                       <Search className="w-6 h-6 text-white" />
                     </div>
                     <div><h3 className="font-bold text-foreground mb-1 text-lg">Acceso inmediato</h3><p className="text-muted-foreground">Encuentra cualquier historia clínica en segundos con nuestro potente motor de búsqueda.</p></div>
                   </div>
                   <div className="flex gap-4 group hover:translate-x-2 transition-transform duration-300">
-                    <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-purple-500 to-purple-600 flex items-center justify-center shrink-0 shadow-lg shadow-purple-500/30 group-hover:scale-110 transition-transform duration-300">
+                    <div className="w-12 h-12 rounded-xl bg-purple-500 flex items-center justify-center shrink-0 group-hover:scale-110 transition-transform duration-300">
                       <Shield className="w-6 h-6 text-white" />
                     </div>
                     <div><h3 className="font-bold text-foreground mb-1 text-lg">Cumplimiento normativo</h3><p className="text-muted-foreground">Cumple con las regulaciones de protección de datos médicos y mantén registros auditables.</p></div>
                   </div>
                   <div className="flex gap-4 group hover:translate-x-2 transition-transform duration-300">
-                    <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-cyan-500 to-cyan-600 flex items-center justify-center shrink-0 shadow-lg shadow-cyan-500/30 group-hover:scale-110 transition-transform duration-300">
+                    <div className="w-12 h-12 rounded-xl bg-cyan-500 flex items-center justify-center shrink-0 group-hover:scale-110 transition-transform duration-300">
                       <Users className="w-6 h-6 text-white" />
                     </div>
                     <div><h3 className="font-bold text-foreground mb-1 text-lg">Mejor atención al paciente</h3><p className="text-muted-foreground">Con información completa y accesible, brinda una atención más personalizada y efectiva.</p></div>
@@ -550,20 +548,20 @@ export default function App() {
                 </div>
               </div>
               <div className="grid grid-cols-2 gap-5 animate-in fade-in slide-in-from-right duration-1000 delay-300">
-                <Card className="p-6 text-center hover:shadow-2xl hover:shadow-primary/20 transition-all duration-500 hover:-translate-y-2 hover:scale-105 bg-gradient-to-br from-card to-primary/5 border-2 border-transparent hover:border-primary/30">
-                  <div className="text-5xl font-extrabold bg-gradient-to-br from-primary to-accent bg-clip-text text-transparent mb-3">60%</div>
+                <Card className="p-6 text-center hover:shadow-lg transition-all duration-300 hover:-translate-y-1">
+                  <div className="text-5xl font-bold text-primary mb-3">60%</div>
                   <p className="text-sm font-medium text-muted-foreground">Menos tiempo en documentación</p>
                 </Card>
-                <Card className="p-6 text-center hover:shadow-2xl hover:shadow-accent/20 transition-all duration-500 hover:-translate-y-2 hover:scale-105 bg-gradient-to-br from-card to-accent/5 border-2 border-transparent hover:border-accent/30">
-                  <div className="text-5xl font-extrabold bg-gradient-to-br from-accent to-chart-3 bg-clip-text text-transparent mb-3">100%</div>
+                <Card className="p-6 text-center hover:shadow-lg transition-all duration-300 hover:-translate-y-1">
+                  <div className="text-5xl font-bold text-accent mb-3">100%</div>
                   <p className="text-sm font-medium text-muted-foreground">Digital y sin papel</p>
                 </Card>
-                <Card className="p-6 text-center hover:shadow-2xl hover:shadow-chart-3/20 transition-all duration-500 hover:-translate-y-2 hover:scale-105 bg-gradient-to-br from-card to-chart-3/5 border-2 border-transparent hover:border-chart-3/30">
-                  <div className="text-5xl font-extrabold bg-gradient-to-br from-chart-3 to-primary bg-clip-text text-transparent mb-3">24/7</div>
+                <Card className="p-6 text-center hover:shadow-lg transition-all duration-300 hover:-translate-y-1">
+                  <div className="text-5xl font-bold text-chart-3 mb-3">24/7</div>
                   <p className="text-sm font-medium text-muted-foreground">Acceso disponible</p>
                 </Card>
-                <Card className="p-6 text-center hover:shadow-2xl hover:shadow-primary/20 transition-all duration-500 hover:-translate-y-2 hover:scale-105 bg-gradient-to-br from-card to-primary/5 border-2 border-transparent hover:border-primary/30">
-                  <div className="text-5xl font-extrabold bg-gradient-to-br from-primary to-accent bg-clip-text text-transparent mb-3">5s</div>
+                <Card className="p-6 text-center hover:shadow-lg transition-all duration-300 hover:-translate-y-1">
+                  <div className="text-5xl font-bold text-primary mb-3">5s</div>
                   <p className="text-sm font-medium text-muted-foreground">Tiempo de búsqueda</p>
                 </Card>
               </div>
@@ -581,26 +579,26 @@ export default function App() {
                 <Lock className="w-4 h-4" />
                 Seguridad de Nivel Hospitalario
               </div>
-              <h2 className="text-3xl sm:text-4xl font-extrabold mb-4 text-balance">Tus datos protegidos con los más altos estándares</h2>
+              <h2 className="text-3xl sm:text-4xl font-bold mb-4 text-balance">Tus datos protegidos con los más altos estándares</h2>
               <p className="text-lg text-sidebar-foreground/80 max-w-2xl mx-auto">La información médica de tus pacientes está protegida con encriptación de grado militar</p>
             </div>
             <div className="grid md:grid-cols-3 gap-8">
-              <div className="text-center group hover:-translate-y-2 transition-all duration-500">
-                <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-sidebar-primary to-sidebar-primary/70 flex items-center justify-center mx-auto mb-5 shadow-2xl shadow-sidebar-primary/30 group-hover:scale-110 group-hover:rotate-3 transition-all duration-300">
+              <div className="text-center group hover:-translate-y-2 transition-all duration-300">
+                <div className="w-20 h-20 rounded-2xl bg-sidebar-primary flex items-center justify-center mx-auto mb-5 group-hover:scale-110 transition-transform duration-300">
                   <Lock className="w-10 h-10 text-sidebar-foreground" />
                 </div>
                 <h3 className="text-xl font-bold mb-3 group-hover:text-sidebar-primary transition-colors">Encriptación AES-256</h3>
                 <p className="text-sidebar-foreground/80 leading-relaxed">Todos los datos se encriptan en reposo y en tránsito con el estándar más seguro de la industria.</p>
               </div>
-              <div className="text-center group hover:-translate-y-2 transition-all duration-500">
-                <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-sidebar-primary to-sidebar-primary/70 flex items-center justify-center mx-auto mb-5 shadow-2xl shadow-sidebar-primary/30 group-hover:scale-110 group-hover:rotate-3 transition-all duration-300">
+              <div className="text-center group hover:-translate-y-2 transition-all duration-300">
+                <div className="w-20 h-20 rounded-2xl bg-sidebar-primary flex items-center justify-center mx-auto mb-5 group-hover:scale-110 transition-transform duration-300">
                   <Shield className="w-10 h-10 text-sidebar-foreground" />
                 </div>
                 <h3 className="text-xl font-bold mb-3 group-hover:text-sidebar-primary transition-colors">Cumplimiento HIPAA</h3>
                 <p className="text-sidebar-foreground/80 leading-relaxed">Diseñado para cumplir con las regulaciones internacionales de protección de datos médicos.</p>
               </div>
-              <div className="text-center group hover:-translate-y-2 transition-all duration-500">
-                <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-sidebar-primary to-sidebar-primary/70 flex items-center justify-center mx-auto mb-5 shadow-2xl shadow-sidebar-primary/30 group-hover:scale-110 group-hover:rotate-3 transition-all duration-300">
+              <div className="text-center group hover:-translate-y-2 transition-all duration-300">
+                <div className="w-20 h-20 rounded-2xl bg-sidebar-primary flex items-center justify-center mx-auto mb-5 group-hover:scale-110 transition-transform duration-300">
                   <Activity className="w-10 h-10 text-sidebar-foreground" />
                 </div>
                 <h3 className="text-xl font-bold mb-3 group-hover:text-sidebar-primary transition-colors">Respaldos Automáticos</h3>
@@ -611,20 +609,19 @@ export default function App() {
         </section>
 
         {/* CTA Section */}
-        <section className="relative py-24 px-4 sm:px-6 lg:px-8 overflow-hidden bg-gradient-to-br from-background via-primary/5 to-background">
-          <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(59,130,246,0.1),transparent)] pointer-events-none"></div>
+        <section className="relative py-24 px-4 sm:px-6 lg:px-8 bg-primary/5">
           <div className="max-w-4xl mx-auto text-center relative animate-in fade-in slide-in-from-bottom duration-1000">
             <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 text-primary text-sm font-semibold mb-6 border border-primary/20 hover:scale-105 transition-transform duration-300">
-              <Activity className="w-4 h-4 animate-pulse" />
+              <Activity className="w-4 h-4" />
               ¡Empieza Hoy Mismo!
             </div>
-            <h2 className="text-3xl sm:text-5xl font-extrabold text-foreground mb-6 leading-tight">
-              Comienza a gestionar tus <span className="bg-gradient-to-r from-primary via-accent to-primary bg-clip-text text-transparent">historias clínicas</span> hoy
+            <h2 className="text-3xl sm:text-5xl font-bold text-foreground mb-6 leading-tight">
+              Comienza a gestionar tus <span className="text-primary">historias clínicas</span> hoy
             </h2>
             <p className="text-lg text-muted-foreground mb-10 max-w-2xl mx-auto leading-relaxed">
               Únete a cientos de profesionales de la salud que ya confían en MediRecord para gestionar la información de sus pacientes de forma eficiente y segura.
             </p>
-            <Button size="lg" className="text-base px-12 py-7 shadow-2xl shadow-primary/40 hover:shadow-primary/60 transition-all duration-300 hover:scale-110 bg-gradient-to-r from-primary to-primary/90 font-bold" onClick={() => setShowLanding(false)}>
+            <Button size="lg" className="text-base px-12 py-7 font-bold" onClick={() => setShowLanding(false)}>
               Acceder al Dashboard
               <ChevronRight className="w-5 h-5 ml-2" />
             </Button>
@@ -652,14 +649,14 @@ export default function App() {
         </section>
 
         {/* Footer */}
-        <footer className="py-12 px-4 sm:px-6 lg:px-8 border-t border-border bg-muted/30">
+        <footer className="py-12 px-4 sm:px-6 lg:px-8 border-t border-border bg-muted/10">
           <div className="max-w-7xl mx-auto">
             <div className="flex flex-col md:flex-row items-center justify-between gap-6">
               <div className="flex items-center gap-3 group cursor-pointer">
-                <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary to-primary/80 flex items-center justify-center shadow-lg shadow-primary/25 group-hover:scale-110 transition-transform duration-300">
-                  <Activity className="w-5 h-5 text-primary-foreground animate-pulse" />
+                <div className="w-10 h-10 rounded-xl bg-primary flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
+                  <Activity className="w-5 h-5 text-primary-foreground" />
                 </div>
-                <span className="text-xl font-bold bg-gradient-to-r from-foreground to-foreground/70 bg-clip-text text-transparent">MediRecord</span>
+                <span className="text-xl font-bold text-foreground">MediRecord</span>
               </div>
               <p className="text-sm text-muted-foreground">© 2026 MediRecord. Sistema de Gestión de Historias Clínicas.</p>
             </div>
@@ -672,65 +669,186 @@ export default function App() {
   // LOGIN PAGE
   if (!token) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-background via-primary/5 to-accent/5 p-4 relative overflow-hidden">
-        {/* Animated Background */}
-        <div className="absolute inset-0 overflow-hidden pointer-events-none">
-          <div className="absolute top-10 left-10 w-64 h-64 bg-primary/10 rounded-full blur-3xl animate-pulse"></div>
-          <div className="absolute bottom-10 right-10 w-80 h-80 bg-accent/10 rounded-full blur-3xl animate-pulse" style={{animationDelay: '1s'}}></div>
+      <div className="min-h-screen flex">
+        {/* Left Side - Info Section */}
+        <div className="hidden lg:flex lg:w-1/2 bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 p-12 flex-col justify-between relative overflow-hidden">
+          {/* Background decorative elements */}
+          <div className="absolute inset-0 opacity-10">
+            <div className="absolute top-20 left-20 w-72 h-72 bg-primary rounded-full blur-3xl"></div>
+            <div className="absolute bottom-20 right-20 w-96 h-96 bg-primary rounded-full blur-3xl"></div>
+          </div>
+
+          <div className="relative z-10">
+            <div className="flex items-center gap-3 mb-12">
+              <div className="w-12 h-12 rounded-xl bg-primary flex items-center justify-center shadow-lg">
+                <Activity className="w-7 h-7 text-white" />
+              </div>
+              <div>
+                <h1 className="text-2xl font-bold text-white">MediRecord</h1>
+                <p className="text-sm text-gray-300">Sistema de Historias Clínicas</p>
+              </div>
+            </div>
+
+            <div className="space-y-8 mt-16">
+              <h2 className="text-4xl font-bold text-white leading-tight">
+                Bienvenido de nuevo
+              </h2>
+              <p className="text-lg text-gray-300 leading-relaxed">
+                Accede a tu cuenta para gestionar las historias clínicas de tus pacientes de forma segura y eficiente.
+              </p>
+
+              <div className="space-y-6 mt-12">
+                <div className="flex items-start gap-4">
+                  <div className="w-12 h-12 rounded-xl bg-primary/20 flex items-center justify-center flex-shrink-0">
+                    <Shield className="w-6 h-6 text-primary" />
+                  </div>
+                  <div>
+                    <h3 className="text-white font-semibold mb-1">Máxima Seguridad</h3>
+                    <p className="text-gray-400 text-sm">Encriptación de extremo a extremo para proteger la información de tus pacientes.</p>
+                  </div>
+                </div>
+
+                <div className="flex items-start gap-4">
+                  <div className="w-12 h-12 rounded-xl bg-primary/20 flex items-center justify-center flex-shrink-0">
+                    <Clock className="w-6 h-6 text-primary" />
+                  </div>
+                  <div>
+                    <h3 className="text-white font-semibold mb-1">Acceso Inmediato</h3>
+                    <p className="text-gray-400 text-sm">Consulta historiales médicos completos en segundos desde cualquier dispositivo.</p>
+                  </div>
+                </div>
+
+                <div className="flex items-start gap-4">
+                  <div className="w-12 h-12 rounded-xl bg-primary/20 flex items-center justify-center flex-shrink-0">
+                    <FileText className="w-6 h-6 text-primary" />
+                  </div>
+                  <div>
+                    <h3 className="text-white font-semibold mb-1">Cumplimiento Normativo</h3>
+                    <p className="text-gray-400 text-sm">Compatible con regulaciones HIPAA y estándares internacionales de salud.</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div className="relative z-10">
+            <p className="text-gray-400 text-sm">© 2026 MediRecord. Todos los derechos reservados.</p>
+          </div>
         </div>
-        
-        <Card className="w-full max-w-md shadow-2xl border-2 border-primary/20 bg-white/95 backdrop-blur-sm relative animate-in fade-in zoom-in-95 duration-700">
-          <CardHeader className="text-center space-y-6 pb-8 pt-10">
-            <div className="mx-auto w-16 h-16 bg-gradient-to-br from-primary to-primary/80 rounded-2xl flex items-center justify-center shadow-xl shadow-primary/30 hover:scale-110 transition-transform duration-300">
-              <Activity className="w-9 h-9 text-primary-foreground animate-pulse" />
+
+        {/* Right Side - Login Form */}
+        <div className="w-full lg:w-1/2 flex items-center justify-center p-8 bg-background relative">
+          {/* Mobile Header */}
+          <div className="absolute top-8 left-8 lg:hidden">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl bg-primary flex items-center justify-center">
+                <Activity className="w-5 h-5 text-white" />
+              </div>
+              <span className="text-xl font-bold text-foreground">MediRecord</span>
             </div>
-            <div>
-              <CardTitle className="text-3xl font-extrabold bg-gradient-to-r from-foreground to-foreground/70 bg-clip-text text-transparent mb-2">MediRecord</CardTitle>
-              <p className="text-sm text-muted-foreground font-medium">Acceso al Sistema de Gestión Médica</p>
+          </div>
+
+          <div className="w-full max-w-md space-y-8 animate-in fade-in slide-in-from-right duration-700">
+            <div className="text-center lg:text-left">
+              <button 
+                onClick={() => setShowLanding(true)}
+                className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-primary transition-colors mb-8"
+              >
+                ← Volver al inicio
+              </button>
+              <h2 className="text-3xl font-bold text-foreground mb-2">Iniciar Sesión</h2>
+              <p className="text-muted-foreground">Ingresa tus credenciales para acceder al sistema</p>
             </div>
-          </CardHeader>
-          <CardContent className="space-y-6 px-8 pb-8">
-            <div className="space-y-2">
-              <label className="text-sm font-semibold text-gray-700">Email</label>
-              <div className="relative group">
-                <User className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground group-focus-within:text-primary transition-colors" />
-                <Input 
-                  className="h-12 pl-10 border-2 focus:border-primary transition-all duration-300 bg-gray-50 focus:bg-white" 
-                  placeholder="usuario@ejemplo.com" 
-                  onChange={(e) => setLoginData({...loginData, username: e.target.value})} 
-                  onKeyPress={(e) => e.key === 'Enter' && handleLogin()} 
-                />
+
+            <div className="space-y-6">
+              <div className="space-y-2">
+                <label className="text-sm font-medium text-foreground">Correo Electrónico</label>
+                <div className="relative">
+                  <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
+                  <Input 
+                    className="h-12 pl-10 bg-background border-2" 
+                    placeholder="doctor@hospital.com" 
+                    type="email"
+                    onChange={(e) => setLoginData({...loginData, username: e.target.value})} 
+                    onKeyPress={(e) => e.key === 'Enter' && handleLogin()} 
+                  />
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <div className="flex items-center justify-between">
+                  <label className="text-sm font-medium text-foreground">Contraseña</label>
+                  <a href="#" className="text-sm text-primary hover:underline">¿Olvidaste tu contraseña?</a>
+                </div>
+                <div className="relative">
+                  <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
+                  <Input 
+                    className="h-12 pl-10 bg-background border-2" 
+                    type="password" 
+                    placeholder="••••••••" 
+                    onChange={(e) => setLoginData({...loginData, password: e.target.value})} 
+                    onKeyPress={(e) => e.key === 'Enter' && handleLogin()} 
+                  />
+                </div>
+              </div>
+
+              <div className="flex items-center gap-2">
+                <input type="checkbox" id="remember" className="w-4 h-4 rounded border-gray-300 text-primary focus:ring-primary" />
+                <label htmlFor="remember" className="text-sm text-muted-foreground">Mantener sesión iniciada</label>
+              </div>
+
+              <Button 
+                className="w-full h-12 text-base font-semibold shadow-lg hover:shadow-xl transition-all duration-300" 
+                onClick={handleLogin}
+              >
+                Ingresar al Sistema
+                <ChevronRight className="w-5 h-5 ml-2" />
+              </Button>
+
+              <div className="relative">
+                <div className="absolute inset-0 flex items-center">
+                  <div className="w-full border-t border-border"></div>
+                </div>
+                <div className="relative flex justify-center text-sm">
+                  <span className="px-2 bg-background text-muted-foreground">o continúa con</span>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <Button variant="outline" className="h-12">
+                  <svg className="w-5 h-5 mr-2" viewBox="0 0 24 24">
+                    <path fill="currentColor" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+                    <path fill="currentColor" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+                    <path fill="currentColor" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
+                    <path fill="currentColor" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
+                  </svg>
+                  Google
+                </Button>
+                <Button variant="outline" className="h-12">
+                  <svg className="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M12 2C6.477 2 2 6.477 2 12c0 4.42 2.865 8.17 6.839 9.49.5.092.682-.217.682-.482 0-.237-.008-.866-.013-1.7-2.782.603-3.369-1.34-3.369-1.34-.454-1.156-1.11-1.463-1.11-1.463-.908-.62.069-.608.069-.608 1.003.07 1.531 1.03 1.531 1.03.892 1.529 2.341 1.087 2.91.831.092-.646.35-1.086.636-1.336-2.22-.253-4.555-1.11-4.555-4.943 0-1.091.39-1.984 1.029-2.683-.103-.253-.446-1.27.098-2.647 0 0 .84-.269 2.75 1.025A9.578 9.578 0 0112 6.836c.85.004 1.705.114 2.504.336 1.909-1.294 2.747-1.025 2.747-1.025.546 1.377.203 2.394.1 2.647.64.699 1.028 1.592 1.028 2.683 0 3.842-2.339 4.687-4.566 4.935.359.309.678.919.678 1.852 0 1.336-.012 2.415-.012 2.743 0 .267.18.578.688.48C19.138 20.167 22 16.418 22 12c0-5.523-4.477-10-10-10z"/>
+                  </svg>
+                  Apple
+                </Button>
+              </div>
+
+              <p className="text-center text-sm text-muted-foreground">
+                ¿No tienes una cuenta?{' '}
+                <a href="#" className="text-primary hover:underline font-medium">Solicita acceso</a>
+              </p>
+
+              <div className="mt-6 p-4 bg-primary/5 rounded-lg border border-primary/20">
+                <div className="flex items-start gap-3">
+                  <Shield className="w-5 h-5 text-primary mt-0.5 flex-shrink-0" />
+                  <div>
+                    <h4 className="text-sm font-semibold text-foreground mb-1">Conexión Segura</h4>
+                    <p className="text-xs text-muted-foreground">Tus datos están protegidos con encriptación SSL de 256 bits</p>
+                  </div>
+                </div>
               </div>
             </div>
-            <div className="space-y-2">
-              <label className="text-sm font-semibold text-gray-700">Contraseña</label>
-              <div className="relative group">
-                <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground group-focus-within:text-primary transition-colors" />
-                <Input 
-                  className="h-12 pl-10 border-2 focus:border-primary transition-all duration-300 bg-gray-50 focus:bg-white" 
-                  type="password" 
-                  placeholder="••••••••" 
-                  onChange={(e) => setLoginData({...loginData, password: e.target.value})} 
-                  onKeyPress={(e) => e.key === 'Enter' && handleLogin()} 
-                />
-              </div>
-            </div>
-            <Button 
-              className="w-full h-12 text-md font-bold shadow-xl shadow-primary/30 hover:shadow-primary/50 transition-all duration-300 hover:scale-105 bg-gradient-to-r from-primary to-primary/90" 
-              onClick={handleLogin}
-            >
-              Ingresar al Sistema
-              <ChevronRight className="w-5 h-5 ml-2" />
-            </Button>
-            <Button 
-              variant="ghost" 
-              className="w-full hover:bg-primary/5 transition-all duration-300" 
-              onClick={() => setShowLanding(true)}
-            >
-              ← Volver a Inicio
-            </Button>
-          </CardContent>
-        </Card>
+          </div>
+        </div>
       </div>
     );
   }
