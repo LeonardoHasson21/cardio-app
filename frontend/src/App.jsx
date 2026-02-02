@@ -274,9 +274,12 @@ export default function App() {
       {sidebarOpen && <div className="fixed inset-0 bg-black/40 z-40 lg:hidden print:hidden" onClick={() => setSidebarOpen(false)} />}
 
       <main className="flex-1 h-screen overflow-y-auto print:overflow-visible print:h-auto">
-        <header className="sticky top-0 z-30 bg-white/80 backdrop-blur-md border-b px-6 h-16 flex items-center justify-between print:hidden">
-          <div className="flex items-center gap-4"><Button variant="ghost" size="icon" className="lg:hidden" onClick={() => setSidebarOpen(true)}><Menu className="w-5 h-5" /></Button><h2 className="text-lg font-semibold text-gray-800">{activeTab === 'pacientes' && 'Listado de Pacientes'}{activeTab === 'nuevo_paciente' && 'Nueva Historia Clínica'}{activeTab === 'admin_usuarios' && 'Panel de Administración'}{activeTab === 'dashboard' && 'Panel de Control'}{activeTab === 'historias_clinicas' && 'Historias Clínicas'}{activeTab === 'search' && 'Búsqueda Avanzada'}</h2></div>
-          {activeTab === 'pacientes' && (<div className="hidden md:flex relative w-64"><Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" /><Input placeholder="Buscar paciente..." className="pl-9 h-9 rounded-full" onChange={(e) => handleBusqueda(e.target.value)} /></div>)}
+        <header className="sticky top-0 z-30 bg-white/80 backdrop-blur-md border-b px-4 sm:px-6 h-16 flex items-center justify-between print:hidden">
+          <div className="flex items-center gap-2 sm:gap-4 flex-1 min-w-0"><Button variant="ghost" size="icon" className="lg:hidden shrink-0" onClick={() => setSidebarOpen(true)}><Menu className="w-5 h-5" /></Button><h2 className="text-sm sm:text-lg font-semibold text-gray-800 truncate">{activeTab === 'pacientes' && 'Listado de Pacientes'}{activeTab === 'nuevo_paciente' && 'Nueva Historia Clínica'}{activeTab === 'admin_usuarios' && 'Panel de Administración'}{activeTab === 'dashboard' && 'Panel de Control'}{activeTab === 'historias_clinicas' && 'Historias Clínicas'}{activeTab === 'search' && 'Búsqueda Avanzada'}</h2></div>
+          <div className="flex items-center gap-2">
+            {activeTab === 'pacientes' && (<div className="hidden md:flex relative w-64"><Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" /><Input placeholder="Buscar paciente..." className="pl-9 h-9 rounded-full" onChange={(e) => handleBusqueda(e.target.value)} /></div>)}
+            <Button variant="ghost" size="icon" className="lg:hidden shrink-0" onClick={cerrarSesion} title="Cerrar sesión"><LogOut className="w-5 h-5" /></Button>
+          </div>
         </header>
 
         <div className="p-6 lg:p-10 max-w-7xl mx-auto space-y-6 print:p-0 print:m-0 print:max-w-none">
@@ -749,9 +752,9 @@ export default function App() {
 
       {/* ================= MODAL IMPRESIÓN PDF (ARREGLADO: SCROLL Y TAMAÑO) ================= */}
       {consultaParaImprimir && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 print:p-0 print:bg-white print:static">
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 print:p-0 print:bg-white print:static print:block">
           {/* Contenedor con scroll para pantallas pequeñas */}
-          <div className="bg-white w-full max-w-3xl rounded-xl shadow-2xl overflow-hidden flex flex-col max-h-[85vh] print:max-h-none print:shadow-none print:rounded-none print:w-full print:h-full print:overflow-visible">
+          <div className="bg-white w-full max-w-3xl rounded-xl shadow-2xl overflow-hidden flex flex-col max-h-[85vh] print:max-h-none print:shadow-none print:rounded-none print:max-w-none print:h-auto print:overflow-visible print:mx-auto print:my-0">
             
             <div className="p-3 sm:p-4 border-b flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 sm:gap-2 bg-gray-50 print:hidden shrink-0">
               <h3 className="font-bold text-base sm:text-lg text-gray-900">Vista Previa</h3>
