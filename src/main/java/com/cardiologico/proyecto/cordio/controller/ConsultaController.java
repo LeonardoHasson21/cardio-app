@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.cardiologico.proyecto.cordio.model.Consulta;
+import com.cardiologico.proyecto.cordio.model.Paciente;
 import com.cardiologico.proyecto.cordio.repository.ConsultaRepository;
 import com.cardiologico.proyecto.cordio.repository.PacienteRepository;
 
@@ -28,17 +29,29 @@ public class ConsultaController {
     private PacienteRepository pacienteRepository;
 
     @PostMapping("/{pacienteId}")
-    public Consulta guardarConsulta(@PathVariable Long pacienteId, @RequestBody Consulta consulta) {
-        return pacienteRepository.findById(pacienteId).map(paciente -> {
-            consulta.setPaciente(paciente);
-            consulta.setFecha(LocalDate.now()); // Fecha automática de hoy
-            return consultaRepository.save(consulta);
-        }).orElseThrow(() -> new RuntimeException("Paciente no encontrado"));
+    public Consulta crearConsulta(@PathVariable Long pacienteId, @RequestBody Consulta consulta) {
+        // 1. Buscamos al paciente (Si no existe, fallamos)
+        Paciente paciente = pacienteRepository.findById(pacienteId)
+                .orElseThrow(() -> new RuntimeException("Paciente no encontrado con ID: " + pacienteId));
+        
+        // 2. VINCULACIÓN EXPLÍCITA (Esto es lo que faltaba)
+        consulta.setPaciente(paciente);
+        
+        // 3. Validar Fecha
+        if (consulta.getFecha() == null) {
+            consulta.setFecha(LocalDate.now());
+        }
+
+        // 4. Validar Campos Nuevos (Por si el frontend manda null)
+        if (consulta.getTipo() == null) consulta.setTipo("Consulta General");
+        if (consulta.getEstado() == null) consulta.setEstado("Completada");
+
+        return consultaRepository.save(consulta);
     }
-    
+
     // 2. Obtener historial de un paciente específico
     @GetMapping("/paciente/{pacienteId}")
     public List<Consulta> obtenerPorPaciente(@PathVariable Long pacienteId) {
-        return consultaRepository.findByPacienteId(pacienteId); 
+        return consultaRepository.findByPacienteId(pacienteId);
     }
 }

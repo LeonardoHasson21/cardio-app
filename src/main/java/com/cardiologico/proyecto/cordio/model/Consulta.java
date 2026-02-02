@@ -51,4 +51,12 @@ public class Consulta {
 
     public Paciente getPaciente() { return paciente; }
     public void setPaciente(Paciente paciente) { this.paciente = paciente; }
+
+    public String getTipo() { return tipo; }
+    public void setTipo(String tipo) { this.tipo = tipo; }
+
+    public String getEstado() { return estado; }
+    public void setEstado(String estado) { this.estado = estado; }
+
+    
 }

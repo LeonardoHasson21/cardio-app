@@ -53,13 +53,13 @@ public class DashboardController {
         // 4. Consultas del Mes Actual
         YearMonth mesActual = YearMonth.now();
         long consultasMes = consultaRepository.countByPacienteMedicoIdAndFechaBetween(
-                medicoId, 
-                mesActual.atDay(1), 
+                medicoId,
+                mesActual.atDay(1),
                 mesActual.atEndOfMonth()
         );
 
-        // 5. Tabla Reciente
-        List<Consulta> recientes = consultaRepository.findTop5ByPacienteMedicoIdOrderByFechaDesc(medicoId);
+        // 5. Tabla Reciente (Usando el nuevo método con ID Desc)
+        List<Consulta> recientes = consultaRepository.findTop5ByPacienteMedicoIdOrderByFechaDescIdDesc(medicoId);
 
         return new DashboardDTO(totalPacientes, totalConsultas, citasHoy, consultasMes, recientes);
     }
