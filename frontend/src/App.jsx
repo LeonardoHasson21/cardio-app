@@ -94,7 +94,13 @@ export default function App() {
   }
 
   const cargarPacientes = async () => {
-    try { const res = await axios.get(`${API_URL}/pacientes`, getConfig()); setPacientes(res.data) } catch (error) {}
+    try { 
+      const res = await axios.get(`${API_URL}/pacientes`, getConfig()); 
+      setPacientes(res.data || []); 
+    } catch (error) {
+      console.error("Error cargando pacientes:", error);
+      setPacientes([]);
+    }
   }
 
   const cargarDashboard = async () => {
@@ -114,29 +120,71 @@ export default function App() {
   const guardarPaciente = async (e) => {
     e.preventDefault();
     try { 
-        await axios.post(`${API_URL}/pacientes`, nuevoPaciente, getConfig()); 
-        alert("Paciente Guardado"); 
+        // Primero crear el paciente
+        const resPaciente = await axios.post(`${API_URL}/pacientes`, nuevoPaciente, getConfig()); 
+        const pacienteId = resPaciente.data.id;
+        
+        // Si hay datos de consulta, guardarla también
+        if (nuevaConsulta.motivo || nuevaConsulta.diagnostico) {
+          await axios.post(`${API_URL}/consultas/${pacienteId}`, nuevaConsulta, getConfig());
+        }
+        
+        alert("Historia Clínica Guardada Exitosamente"); 
         setNuevoPaciente({nombre:'',apellido:'',dni:''}); 
         setNuevaConsulta({motivo:'',diagnostico:'',tratamiento:'', observaciones:'', tipo:'Consulta General', estado:'Completada', fecha: new Date().toISOString().split('T')[0]});
         cargarPacientes(); 
-        cargarDashboard(); // Actualizar contadores
-    } catch (error) { alert("Error al guardar paciente") }
+        cargarDashboard();
+        cargarTodasLasConsultas();
+        setActiveTab('dashboard'); // Redirigir al dashboard
+    } catch (error) { 
+      console.error("Error:", error);
+      alert("Error al guardar: " + (error.response?.data?.message || error.message)) 
+    }
   }
 
   const eliminarPaciente = async (id) => {
-    if(!window.confirm("¿Seguro?")) return;
-    try { await axios.delete(`${API_URL}/pacientes/${id}`, getConfig()); cargarPacientes(); cargarDashboard(); } catch (error) {alert("Error")}
+    if(!window.confirm("¿Está seguro de eliminar este paciente? Esta acción no se puede deshacer.")) return;
+    try { 
+      await axios.delete(`${API_URL}/pacientes/${id}`, getConfig()); 
+      cargarPacientes(); 
+      cargarDashboard();
+      cargarTodasLasConsultas();
+      alert("Paciente eliminado exitosamente");
+    } catch (error) {
+      console.error("Error:", error);
+      alert("Error al eliminar: " + (error.response?.data?.message || "No se pudo eliminar el paciente"))
+    }
   }
 
   const prepararEdicion = (paciente) => { setPacienteAEditar(paciente); setMostrarModalEditar(true); }
   const actualizarPaciente = async () => {
-    try { await axios.put(`${API_URL}/pacientes/${pacienteAEditar.id}`, pacienteAEditar, getConfig()); setMostrarModalEditar(false); cargarPacientes(); } catch (error) {alert("Error")}
+    try { 
+      await axios.put(`${API_URL}/pacientes/${pacienteAEditar.id}`, pacienteAEditar, getConfig()); 
+      setMostrarModalEditar(false); 
+      cargarPacientes();
+      cargarTodasLasConsultas();
+      alert("Paciente actualizado exitosamente");
+    } catch (error) {
+      console.error("Error:", error);
+      alert("Error al actualizar: " + (error.response?.data?.message || error.message))
+    }
   }
 
   const handleBusqueda = async (termino) => {
     setSearchTerm(termino);
-    if (termino.length === 0) { cargarPacientes(); return; }
-    try { const res = await axios.get(`${API_URL}/pacientes/buscar?query=${termino}`, getConfig()); setPacientes(res.data); } catch (error) { }
+    if (termino.length === 0) { 
+      cargarPacientes(); 
+      return; 
+    }
+    if (termino.length < 2) return; // Esperar al menos 2 caracteres
+    
+    try { 
+      const res = await axios.get(`${API_URL}/pacientes/buscar?query=${termino}`, getConfig()); 
+      setPacientes(res.data || []); 
+    } catch (error) { 
+      console.error("Error en búsqueda:", error);
+      // No mostrar alerta para no molestar al usuario mientras escribe
+    }
   }
 
   const realizarBusquedaAvanzada = async () => {
@@ -146,23 +194,34 @@ export default function App() {
     }
     
     try {
-      let url = `${API_URL}/consultas/buscar?`;
-      if (searchParams.query) url += `query=${searchParams.query}&`;
-      if (searchParams.desde) url += `desde=${searchParams.desde}&`;
-      if (searchParams.hasta) url += `hasta=${searchParams.hasta}&`;
+      const params = new URLSearchParams();
+      if (searchParams.query) params.append('query', searchParams.query);
+      if (searchParams.desde) params.append('desde', searchParams.desde);
+      if (searchParams.hasta) params.append('hasta', searchParams.hasta);
       
-      const res = await axios.get(url, getConfig());
-      setResultadosBusqueda(res.data);
+      const res = await axios.get(`${API_URL}/consultas/buscar?${params.toString()}`, getConfig());
+      setResultadosBusqueda(res.data || []);
       setBusquedaRealizada(true);
     } catch (error) {
-      console.error("Error en búsqueda", error);
-      alert("Error al realizar búsqueda");
+      console.error("Error en búsqueda:", error);
+      setResultadosBusqueda([]);
+      setBusquedaRealizada(true);
+      alert("Error al realizar búsqueda: " + (error.response?.data?.message || "Intenta nuevamente"));
     }
   }
 
   const abrirHistoria = async (paciente) => {
     setPacienteSeleccionado(paciente);
-    try { const res = await axios.get(`${API_URL}/consultas/paciente/${paciente.id}`, getConfig()); setConsultas(res.data); setMostrarModalHistoria(true); } catch (error) {}
+    try { 
+      const res = await axios.get(`${API_URL}/consultas/paciente/${paciente.id}`, getConfig()); 
+      setConsultas(res.data || []); 
+      setMostrarModalHistoria(true); 
+    } catch (error) {
+      console.error("Error cargando historia:", error);
+      setConsultas([]);
+      setMostrarModalHistoria(true);
+      // No mostrar alerta, permitir que se abra el modal vacío
+    }
   }
 
   const guardarConsulta = async () => {
@@ -170,10 +229,11 @@ export default function App() {
     try { 
         await axios.post(`${API_URL}/consultas/${pacienteSeleccionado.id}`, nuevaConsulta, getConfig()); 
         // Reset a valores por defecto
-        setNuevaConsulta({motivo:'',diagnostico:'',tratamiento:'', tipo:'Consulta General', estado:'Completada'}); 
+        setNuevaConsulta({motivo:'',diagnostico:'',tratamiento:'', observaciones:'', tipo:'Consulta General', estado:'Completada', fecha: new Date().toISOString().split('T')[0]}); 
         const res = await axios.get(`${API_URL}/consultas/paciente/${pacienteSeleccionado.id}`, getConfig()); 
         setConsultas(res.data); 
         cargarDashboard(); // Actualizar tabla dashboard
+        cargarTodasLasConsultas(); // Actualizar lista de consultas
         alert("Guardado exitosamente");
     } catch (error) { alert("Error al guardar consulta") }
   }
@@ -181,7 +241,15 @@ export default function App() {
   const handlePrint = () => window.print();
 
   // Admin
-  const cargarMedicos = async () => { try { const res = await axios.get(`${API_URL}/admin/medicos`, getConfig()); setListaMedicos(res.data) } catch (error) { } }
+  const cargarMedicos = async () => { 
+    try { 
+      const res = await axios.get(`${API_URL}/admin/medicos`, getConfig()); 
+      setListaMedicos(res.data || []); 
+    } catch (error) { 
+      console.error("Error cargando médicos:", error);
+      setListaMedicos([]);
+    } 
+  }
   const crearMedicoAdmin = async () => { try { await axios.post(`${API_URL}/admin/medicos`, nuevoMedicoData, getConfig()); cargarMedicos(); alert("Creado"); } catch (error) {} }
   const toggleMedico = async (id) => { try { await axios.put(`${API_URL}/admin/medicos/${id}/toggle`, {}, getConfig()); cargarMedicos(); } catch (error) { } }
   const eliminarMedico = async (id) => { if(!window.confirm("¿Confirmar?")) return; try { await axios.delete(`${API_URL}/admin/medicos/${id}`, getConfig()); cargarMedicos() } catch (error) { } }
@@ -241,7 +309,7 @@ export default function App() {
                       placeholder="Buscar por paciente, ID o diagnóstico..." 
                       className="pl-10 h-11 rounded-lg" 
                       value={searchTerm}
-                      onChange={(e) => handleBusqueda(e.target.value)}
+                      onChange={(e) => setSearchTerm(e.target.value)}
                     />
                   </div>
 
@@ -258,45 +326,57 @@ export default function App() {
                       onClick={() => setFiltrosConsultas({...filtrosConsultas, estado: 'Completada'})}
                       className="rounded-full"
                     >
-                      Activas
+                      Completadas
                     </Button>
                     <Button 
                       variant={filtrosConsultas.estado === 'En proceso' ? 'default' : 'outline'}
                       onClick={() => setFiltrosConsultas({...filtrosConsultas, estado: 'En proceso'})}
                       className="rounded-full"
                     >
-                      Archivadas
+                      En Proceso
                     </Button>
                   </div>
 
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     {(filtrosConsultas.estado === 'todas' 
-                      ? pacientes 
-                      : pacientes.filter(p => {
-                          // Filtrar pacientes basándose en si tienen consultas con ese estado
-                          return true; // Por ahora mostrar todos
-                        })
-                    ).map((paciente) => (
-                      <Card key={paciente.id} className="border-none shadow-sm hover:shadow-lg transition-all duration-200 bg-white">
+                      ? todasLasConsultas 
+                      : todasLasConsultas.filter(c => c.estado === filtrosConsultas.estado)
+                    ).filter(consulta => {
+                      if (!searchTerm) return true;
+                      const busqueda = searchTerm.toLowerCase();
+                      const pacienteNombre = consulta.paciente ? `${consulta.paciente.nombre} ${consulta.paciente.apellido}`.toLowerCase() : '';
+                      const id = consulta.id.toString();
+                      const diagnostico = (consulta.diagnostico || '').toLowerCase();
+                      return pacienteNombre.includes(busqueda) || id.includes(busqueda) || diagnostico.includes(busqueda);
+                    }).map((consulta) => (
+                      <Card key={consulta.id} className="border-none shadow-sm hover:shadow-lg transition-all duration-200 bg-white">
                         <CardContent className="p-6">
                           <div className="flex items-start gap-4 mb-4">
                             <div className="w-14 h-14 rounded-lg bg-cyan-100 text-cyan-600 flex items-center justify-center text-lg font-bold">
-                              {paciente.nombre.charAt(0)}{paciente.apellido.charAt(0)}
+                              {consulta.paciente ? `${consulta.paciente.nombre.charAt(0)}${consulta.paciente.apellido.charAt(0)}` : 'SD'}
                             </div>
                             <div className="flex-1">
-                              <h3 className="font-bold text-gray-900">{paciente.nombre} {paciente.apellido}</h3>
-                              <p className="text-sm text-cyan-600 font-semibold">{paciente.dni.substring(0, 8) || paciente.dni}</p>
+                              <h3 className="font-bold text-gray-900">
+                                {consulta.paciente ? `${consulta.paciente.nombre} ${consulta.paciente.apellido}` : 'Sin datos del paciente'}
+                              </h3>
+                              <p className="text-sm text-cyan-600 font-semibold">HC-{consulta.id.toString().padStart(4, '0')}</p>
                             </div>
                           </div>
                           
                           <div className="space-y-3 border-t pt-4">
                             <div>
                               <p className="text-xs text-gray-500 uppercase tracking-wide">DIAGNÓSTICO</p>
-                              <p className="text-sm font-medium text-gray-800 mt-1">General</p>
+                              <p className="text-sm font-medium text-gray-800 mt-1">{consulta.diagnostico || 'Sin diagnóstico'}</p>
                             </div>
                             <div className="flex justify-between text-xs text-gray-500">
-                              <span>31 Ene 2026</span>
-                              <span className="text-cyan-600 font-medium">Activa</span>
+                              <span>{consulta.fecha || 'Sin fecha'}</span>
+                              <span className={cn(
+                                "font-medium",
+                                consulta.estado === 'Completada' ? "text-emerald-600" : 
+                                consulta.estado === 'En proceso' ? "text-blue-600" : "text-amber-600"
+                              )}>
+                                {consulta.estado || 'Pendiente'}
+                              </span>
                             </div>
                           </div>
 
@@ -305,14 +385,15 @@ export default function App() {
                               size="sm" 
                               variant="ghost" 
                               className="flex-1"
-                              onClick={() => abrirHistoria(paciente)}
+                              onClick={() => setConsultaParaImprimir(consulta)}
                             >
                               <Eye className="w-4 h-4 mr-2" /> Ver
                             </Button>
                             <Button 
                               size="sm" 
                               variant="ghost"
-                              onClick={() => prepararEdicion(paciente)}
+                              onClick={() => consulta.paciente && abrirHistoria(consulta.paciente)}
+                              disabled={!consulta.paciente}
                             >
                               <Edit className="w-4 h-4" />
                             </Button>
@@ -320,7 +401,7 @@ export default function App() {
                               size="sm" 
                               variant="ghost" 
                               className="text-red-500 hover:text-red-700"
-                              onClick={() => eliminarPaciente(paciente.id)}
+                              onClick={() => {/* TODO: Implementar eliminar consulta */}}
                             >
                               <Trash2 className="w-4 h-4" />
                             </Button>
@@ -329,6 +410,14 @@ export default function App() {
                       </Card>
                     ))}
                   </div>
+
+                  {(filtrosConsultas.estado === 'todas' ? todasLasConsultas : todasLasConsultas.filter(c => c.estado === filtrosConsultas.estado)).length === 0 && (
+                    <div className="text-center py-12">
+                      <FileText className="w-16 h-16 text-gray-300 mx-auto mb-4" />
+                      <h3 className="text-lg font-semibold text-gray-700 mb-2">No hay historias clínicas</h3>
+                      <p className="text-gray-500">Comienza creando una nueva historia clínica</p>
+                    </div>
+                  )}
                 </CardContent>
               </Card>
             </div>
@@ -367,10 +456,15 @@ export default function App() {
                       </div>
 
                       <div className="border-t mt-4 pt-4">
-                        <div className="text-sm text-gray-500 flex justify-between">
-                          <span>8 historias • 31 Ene 2026</span>
-                          <Button size="sm" variant="ghost" className="text-cyan-600 hover:text-cyan-700">
-                            <Eye className="w-4 h-4 mr-1" /> Ver
+                        <div className="text-sm text-gray-500 flex justify-between items-center">
+                          <span>DNI: {p.dni}</span>
+                          <Button 
+                            size="sm" 
+                            variant="ghost" 
+                            className="text-cyan-600 hover:text-cyan-700"
+                            onClick={() => abrirHistoria(p)}
+                          >
+                            <Eye className="w-4 h-4 mr-1" /> Ver Historia
                           </Button>
                         </div>
                       </div>

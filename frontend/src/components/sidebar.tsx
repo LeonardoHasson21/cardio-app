@@ -16,7 +16,7 @@ import {
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 
-export function Sidebar({ activeSection, onSectionChange, role, cerrarSesion }) {
+export function Sidebar({ activeSection, onSectionChange, role, cerrarSesion }: any) {
   const [collapsed, setCollapsed] = useState(false)
 
   // Definimos menú según rol
