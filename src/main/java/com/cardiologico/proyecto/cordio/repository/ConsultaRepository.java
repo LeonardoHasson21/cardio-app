@@ -19,6 +19,9 @@ public interface ConsultaRepository extends JpaRepository<Consulta, Long> {
     // NUEVO: Contar consultas de ESTE MES (Usamos un rango de fechas)
     long countByPacienteMedicoIdAndFechaBetween(Long medicoId, LocalDate inicio, LocalDate fin);
 
+    // Ordenar las consultas por fecha descendente
+    List<Consulta> findByPacienteMedicoIdOrderByFechaDesc(Long medicoId);
+
     // NUEVO: Traer las 5 últimas consultas para la tabla
     List<Consulta> findTop5ByPacienteMedicoIdOrderByFechaDesc(Long medicoId);
 }

@@ -11,6 +11,7 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.FetchType;
 
 @Entity
 public class Consulta {
@@ -22,11 +23,13 @@ public class Consulta {
     private LocalDate fecha;
     private String motivo;
     private String diagnostico;
+    private String tipo;
+    private String estado;
 
     @Column(length = 2000)
     private String tratamiento;
 
-    @ManyToOne
+    @ManyToOne(fetch=FetchType.EAGER)
     @JoinColumn(name = "paciente_id")
     @JsonIgnore
     private Paciente paciente;
