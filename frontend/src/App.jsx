@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react'
 import axios from 'axios'
 import { cn } from "@/lib/utils"
-import { Sidebar } from "@/components/Sidebar" 
+import { Sidebar } from "@/components/sidebar" 
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
