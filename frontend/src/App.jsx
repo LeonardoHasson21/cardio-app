@@ -9,7 +9,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 
 import { 
   Plus, Search, Activity, Trash2, Edit, FileText, User, Menu, X, Lock, Unlock,
-  Users, Calendar, TrendingUp, Clock, Printer, ChevronDown, Eye, Mail
+  Users, Calendar, TrendingUp, Clock, Printer, ChevronDown, Eye, Mail, LogOut
 } from "lucide-react"
 
 const API_URL = 'https://cardio-app-production.up.railway.app/api';
