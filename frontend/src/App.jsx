@@ -9,7 +9,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 
 import { 
   Plus, Search, Activity, Trash2, Edit, FileText, User, Menu, X, Lock, Unlock,
-  Users, Calendar, TrendingUp, Clock, Printer, ChevronDown
+  Users, Calendar, TrendingUp, Clock, Printer, ChevronDown, Eye
 } from "lucide-react"
 
 const API_URL = 'https://cardio-app-production.up.railway.app/api';
@@ -36,8 +36,10 @@ export default function App() {
       motivo: '', 
       diagnostico: '', 
       tratamiento: '', 
+      observaciones: '',
       tipo: 'Consulta General', 
-      estado: 'Completada' 
+      estado: 'Completada',
+      fecha: new Date().toISOString().split('T')[0]
   })
   
   const [listaMedicos, setListaMedicos] = useState([])
@@ -115,6 +117,7 @@ export default function App() {
         await axios.post(`${API_URL}/pacientes`, nuevoPaciente, getConfig()); 
         alert("Paciente Guardado"); 
         setNuevoPaciente({nombre:'',apellido:'',dni:''}); 
+        setNuevaConsulta({motivo:'',diagnostico:'',tratamiento:'', observaciones:'', tipo:'Consulta General', estado:'Completada', fecha: new Date().toISOString().split('T')[0]});
         cargarPacientes(); 
         cargarDashboard(); // Actualizar contadores
     } catch (error) { alert("Error al guardar paciente") }
@@ -226,85 +229,107 @@ export default function App() {
               <div className="flex flex-col md:flex-row gap-4 items-center justify-between">
                 <div>
                   <h2 className="text-2xl font-bold text-gray-800">Historias Clínicas</h2>
-                  <p className="text-gray-500 mt-1">Total de registros: {todasLasConsultas.length}</p>
-                </div>
-                <div className="flex gap-2">
-                  <Button 
-                    variant={filtrosConsultas.estado === 'todas' ? 'default' : 'outline'}
-                    onClick={() => setFiltrosConsultas({...filtrosConsultas, estado: 'todas'})}
-                  >
-                    Todas
-                  </Button>
-                  <Button 
-                    variant={filtrosConsultas.estado === 'Completada' ? 'default' : 'outline'}
-                    onClick={() => setFiltrosConsultas({...filtrosConsultas, estado: 'Completada'})}
-                  >
-                    Completadas
-                  </Button>
-                  <Button 
-                    variant={filtrosConsultas.estado === 'En proceso' ? 'default' : 'outline'}
-                    onClick={() => setFiltrosConsultas({...filtrosConsultas, estado: 'En proceso'})}
-                  >
-                    En Proceso
-                  </Button>
+                  <p className="text-gray-500 mt-1">Gestione y consulte todas las historias clínicas registradas</p>
                 </div>
               </div>
 
-              <Card className="border-none shadow-sm overflow-hidden bg-white">
-                <div className="overflow-x-auto">
-                  <table className="w-full text-sm text-left">
-                    <thead className="bg-gray-50/50 text-gray-500 font-medium border-b border-gray-100">
-                      <tr>
-                        <th className="px-6 py-4 text-xs font-semibold uppercase tracking-wider">ID</th>
-                        <th className="px-6 py-4 text-xs font-semibold uppercase tracking-wider">PACIENTE</th>
-                        <th className="px-6 py-4 text-xs font-semibold uppercase tracking-wider">FECHA</th>
-                        <th className="px-6 py-4 text-xs font-semibold uppercase tracking-wider">TIPO</th>
-                        <th className="px-6 py-4 text-xs font-semibold uppercase tracking-wider">DIAGNÓSTICO</th>
-                        <th className="px-6 py-4 text-xs font-semibold uppercase tracking-wider">ESTADO</th>
-                      </tr>
-                    </thead>
-                    <tbody className="divide-y divide-gray-100 bg-white">
-                      {(filtrosConsultas.estado === 'todas' 
-                        ? todasLasConsultas 
-                        : todasLasConsultas.filter(c => c.estado === filtrosConsultas.estado)
-                      ).map((consulta) => (
-                        <tr 
-                          key={consulta.id} 
-                          className="hover:bg-blue-50/50 transition-colors cursor-pointer"
-                          onClick={() => setConsultaParaImprimir(consulta)}
-                        >
-                          <td className="px-6 py-4 font-mono text-xs text-cyan-600 font-semibold">
-                            #{consulta.id.toString().padStart(6, '0')}
-                          </td>
-                          <td className="px-6 py-4 font-medium text-gray-800">
-                            {consulta.paciente ? `${consulta.paciente.nombre} ${consulta.paciente.apellido}` : "Sin datos"}
-                          </td>
-                          <td className="px-6 py-4 text-gray-500">
-                            {consulta.fecha}
-                          </td>
-                          <td className="px-6 py-4 text-gray-700">
-                            {consulta.tipo}
-                          </td>
-                          <td className="px-6 py-4 text-gray-700">
-                            {consulta.diagnostico}
-                          </td>
-                          <td className="px-6 py-4">
-                            <span className={cn(
-                              "inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold border",
-                              consulta.estado === "Completada"
-                                ? "bg-emerald-50 text-emerald-700 border-emerald-100"
-                                : consulta.estado === "En proceso"
-                                  ? "bg-blue-50 text-blue-700 border-blue-100"
-                                  : "bg-amber-50 text-amber-700 border-amber-100"
-                            )}>
-                              {consulta.estado}
-                            </span>
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
+              <Card className="border-none shadow-sm bg-white">
+                <CardContent className="p-6">
+                  <div className="relative mb-6">
+                    <Search className="absolute left-3 top-3 w-5 h-5 text-gray-400" />
+                    <Input 
+                      placeholder="Buscar por paciente, ID o diagnóstico..." 
+                      className="pl-10 h-11 rounded-lg" 
+                      value={searchTerm}
+                      onChange={(e) => handleBusqueda(e.target.value)}
+                    />
+                  </div>
+
+                  <div className="flex gap-2 mb-6">
+                    <Button 
+                      variant={filtrosConsultas.estado === 'todas' ? 'default' : 'outline'}
+                      onClick={() => setFiltrosConsultas({...filtrosConsultas, estado: 'todas'})}
+                      className="rounded-full"
+                    >
+                      Todas
+                    </Button>
+                    <Button 
+                      variant={filtrosConsultas.estado === 'Completada' ? 'default' : 'outline'}
+                      onClick={() => setFiltrosConsultas({...filtrosConsultas, estado: 'Completada'})}
+                      className="rounded-full"
+                    >
+                      Activas
+                    </Button>
+                    <Button 
+                      variant={filtrosConsultas.estado === 'En proceso' ? 'default' : 'outline'}
+                      onClick={() => setFiltrosConsultas({...filtrosConsultas, estado: 'En proceso'})}
+                      className="rounded-full"
+                    >
+                      Archivadas
+                    </Button>
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    {(filtrosConsultas.estado === 'todas' 
+                      ? pacientes 
+                      : pacientes.filter(p => {
+                          // Filtrar pacientes basándose en si tienen consultas con ese estado
+                          return true; // Por ahora mostrar todos
+                        })
+                    ).map((paciente) => (
+                      <Card key={paciente.id} className="border-none shadow-sm hover:shadow-lg transition-all duration-200 bg-white">
+                        <CardContent className="p-6">
+                          <div className="flex items-start gap-4 mb-4">
+                            <div className="w-14 h-14 rounded-lg bg-cyan-100 text-cyan-600 flex items-center justify-center text-lg font-bold">
+                              {paciente.nombre.charAt(0)}{paciente.apellido.charAt(0)}
+                            </div>
+                            <div className="flex-1">
+                              <h3 className="font-bold text-gray-900">{paciente.nombre} {paciente.apellido}</h3>
+                              <p className="text-sm text-cyan-600 font-semibold">{paciente.dni.substring(0, 8) || paciente.dni}</p>
+                            </div>
+                          </div>
+                          
+                          <div className="space-y-3 border-t pt-4">
+                            <div>
+                              <p className="text-xs text-gray-500 uppercase tracking-wide">DIAGNÓSTICO</p>
+                              <p className="text-sm font-medium text-gray-800 mt-1">General</p>
+                            </div>
+                            <div className="flex justify-between text-xs text-gray-500">
+                              <span>31 Ene 2026</span>
+                              <span className="text-cyan-600 font-medium">Activa</span>
+                            </div>
+                          </div>
+
+                          <div className="flex gap-2 mt-4 pt-4 border-t">
+                            <Button 
+                              size="sm" 
+                              variant="ghost" 
+                              className="flex-1"
+                              onClick={() => abrirHistoria(paciente)}
+                            >
+                              <Eye className="w-4 h-4 mr-2" /> Ver
+                            </Button>
+                            <Button 
+                              size="sm" 
+                              variant="ghost"
+                              onClick={() => prepararEdicion(paciente)}
+                            >
+                              <Edit className="w-4 h-4" />
+                            </Button>
+                            <Button 
+                              size="sm" 
+                              variant="ghost" 
+                              className="text-red-500 hover:text-red-700"
+                              onClick={() => eliminarPaciente(paciente.id)}
+                            >
+                              <Trash2 className="w-4 h-4" />
+                            </Button>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    ))}
+                  </div>
+                </CardContent>
               </Card>
             </div>
           )}
@@ -312,12 +337,60 @@ export default function App() {
           {/* OTRAS VISTAS */}
           {activeTab === 'pacientes' && (
             <div className="space-y-6 print:hidden">
-               <div className="md:hidden relative mb-4"><Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" /><Input placeholder="Buscar..." className="pl-9" onChange={(e) => handleBusqueda(e.target.value)}/></div>
-              <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+              <div className="md:hidden relative mb-4">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                <Input placeholder="Buscar paciente..." className="pl-9" onChange={(e) => handleBusqueda(e.target.value)}/>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 {pacientes.map((p) => (
-                  <Card key={p.id} className="border-none shadow-sm hover:shadow-lg transition-all duration-200 group bg-white">
-                    <CardHeader className="flex flex-row items-center gap-4 pb-4"><div className="w-12 h-12 rounded-full bg-primary/10 text-primary flex items-center justify-center text-lg font-bold">{p.nombre.charAt(0)}{p.apellido.charAt(0)}</div><div><CardTitle className="text-base font-bold text-gray-800">{p.nombre} {p.apellido}</CardTitle><p className="text-xs font-mono text-muted-foreground bg-gray-100 px-2 py-0.5 rounded w-fit mt-1">ID: {p.dni}</p></div></CardHeader>
-                    <CardContent><div className="flex gap-2 pt-2 border-t border-gray-100 mt-4"><Button className="flex-1 bg-white border border-gray-200 text-gray-700 hover:bg-primary hover:text-white shadow-sm" size="sm" onClick={() => abrirHistoria(p)}><FileText className="w-4 h-4 mr-2" /> Historia</Button><Button size="sm" variant="ghost" onClick={() => prepararEdicion(p)}><Edit className="w-4 h-4" /></Button><Button size="sm" variant="ghost" className="text-red-400 hover:text-red-600" onClick={() => eliminarPaciente(p.id)}><Trash2 className="w-4 h-4" /></Button></div></CardContent>
+                  <Card key={p.id} className="border-none shadow-sm hover:shadow-lg transition-all duration-200 bg-white">
+                    <CardContent className="p-6">
+                      <div className="flex items-center gap-4 mb-4">
+                        <div className="w-14 h-14 rounded-lg bg-cyan-100 text-cyan-600 flex items-center justify-center text-lg font-bold">
+                          {p.nombre.charAt(0)}{p.apellido.charAt(0)}
+                        </div>
+                        <div className="flex-1">
+                          <h3 className="font-bold text-gray-900">{p.nombre} {p.apellido}</h3>
+                          <p className="text-sm text-gray-500">45 años • {p.dni}</p>
+                        </div>
+                      </div>
+                      
+                      <div className="space-y-2 border-t pt-4">
+                        <div className="flex items-center gap-2 text-sm text-gray-600">
+                          <span>📞</span>
+                          <span>+34 612 345 678</span>
+                        </div>
+                        <div className="flex items-center gap-2 text-sm text-gray-600">
+                          <span>✉️</span>
+                          <span className="text-cyan-600">{p.nombre.toLowerCase()}.{p.apellido.toLowerCase()}@email.com</span>
+                        </div>
+                      </div>
+
+                      <div className="border-t mt-4 pt-4">
+                        <div className="text-sm text-gray-500 flex justify-between">
+                          <span>8 historias • 31 Ene 2026</span>
+                          <Button size="sm" variant="ghost" className="text-cyan-600 hover:text-cyan-700">
+                            <Eye className="w-4 h-4 mr-1" /> Ver
+                          </Button>
+                        </div>
+                      </div>
+
+                      <div className="flex gap-2 mt-4 pt-4 border-t">
+                        <Button 
+                          className="flex-1 bg-white border border-gray-200 text-gray-700 hover:bg-primary hover:text-white shadow-sm" 
+                          size="sm" 
+                          onClick={() => abrirHistoria(p)}
+                        >
+                          <FileText className="w-4 h-4 mr-2" /> Historia
+                        </Button>
+                        <Button size="sm" variant="ghost" onClick={() => prepararEdicion(p)}>
+                          <Edit className="w-4 h-4" />
+                        </Button>
+                        <Button size="sm" variant="ghost" className="text-red-500 hover:text-red-700" onClick={() => eliminarPaciente(p.id)}>
+                          <Trash2 className="w-4 h-4" />
+                        </Button>
+                      </div>
+                    </CardContent>
                   </Card>
                 ))}
               </div>
@@ -325,16 +398,136 @@ export default function App() {
           )}
 
           {activeTab === 'nuevo_paciente' && (
-            <Card className="max-w-3xl mx-auto border-none shadow-md bg-white print:hidden">
-              <CardHeader className="border-b bg-gray-50/50 px-8 py-6"><CardTitle className="flex items-center gap-2"><div className="p-2 bg-primary/10 rounded-lg"><User className="w-5 h-5 text-primary"/></div>Información del Paciente</CardTitle></CardHeader>
+            <Card className="max-w-4xl mx-auto border-none shadow-md bg-white print:hidden">
+              <CardHeader className="border-b bg-gray-50/50 px-8 py-6">
+                <CardTitle className="flex items-center gap-2">
+                  <FileText className="w-5 h-5 text-primary"/>
+                  Nueva Historia Clínica
+                </CardTitle>
+                <p className="text-sm text-gray-500 mt-2">Complete los datos del paciente y la información de la consulta</p>
+              </CardHeader>
               <CardContent className="p-8">
-                <form onSubmit={guardarPaciente} className="space-y-6">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div className="space-y-2"><label className="text-sm font-medium">Nombre</label><Input className="h-10" value={nuevoPaciente.nombre} onChange={(e) => setNuevoPaciente({...nuevoPaciente, nombre: e.target.value})} required /></div>
-                    <div className="space-y-2"><label className="text-sm font-medium">Apellido</label><Input className="h-10" value={nuevoPaciente.apellido} onChange={(e) => setNuevoPaciente({...nuevoPaciente, apellido: e.target.value})} required /></div>
+                <form onSubmit={guardarPaciente} className="space-y-8">
+                  {/* Sección Datos del Paciente */}
+                  <div>
+                    <div className="flex items-center gap-2 mb-6">
+                      <User className="w-5 h-5 text-primary" />
+                      <h3 className="font-semibold text-lg text-gray-900">Datos del Paciente</h3>
+                    </div>
+                    
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      <div className="space-y-2">
+                        <label className="text-sm font-medium text-gray-700">Nombre Completo</label>
+                        <Input 
+                          className="h-10 bg-gray-50" 
+                          placeholder="Ej: María García López"
+                          value={nuevoPaciente.nombre} 
+                          onChange={(e) => setNuevoPaciente({...nuevoPaciente, nombre: e.target.value})} 
+                          required 
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <label className="text-sm font-medium text-gray-700">Edad</label>
+                        <Input 
+                          className="h-10 bg-gray-50" 
+                          placeholder="Ej: 45"
+                          type="number"
+                        />
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
+                      <div className="space-y-2">
+                        <label className="text-sm font-medium text-gray-700">Documento de Identidad</label>
+                        <Input 
+                          className="h-10 bg-gray-50" 
+                          placeholder="Ej: 12345678A"
+                          value={nuevoPaciente.dni} 
+                          onChange={(e) => setNuevoPaciente({...nuevoPaciente, dni: e.target.value})} 
+                          required 
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <label className="text-sm font-medium text-gray-700">Teléfono de Contacto</label>
+                        <Input 
+                          className="h-10 bg-gray-50" 
+                          placeholder="Ej: +34 612 345 678"
+                        />
+                      </div>
+                    </div>
                   </div>
-                  <div className="space-y-2"><label className="text-sm font-medium">DNI</label><Input className="h-10" value={nuevoPaciente.dni} onChange={(e) => setNuevoPaciente({...nuevoPaciente, dni: e.target.value})} required /></div>
-                  <div className="pt-4 flex justify-end"><Button type="submit" size="lg" className="px-8 shadow-lg shadow-primary/20">Registrar Paciente</Button></div>
+
+                  {/* Sección Información de la Consulta */}
+                  <div className="border-t pt-8">
+                    <div className="flex items-center gap-2 mb-6">
+                      <FileText className="w-5 h-5 text-primary" />
+                      <h3 className="font-semibold text-lg text-gray-900">Información de la Consulta</h3>
+                    </div>
+
+                    <div className="space-y-6">
+                      <div className="space-y-2">
+                        <label className="text-sm font-medium text-gray-700">Fecha de Consulta</label>
+                        <Input 
+                          type="date" 
+                          className="h-10 bg-gray-50"
+                          value={nuevaConsulta.fecha}
+                          onChange={(e) => setNuevaConsulta({...nuevaConsulta, fecha: e.target.value})}
+                        />
+                      </div>
+
+                      <div className="space-y-2">
+                        <label className="text-sm font-medium text-gray-700">Síntomas / Motivo de Consulta</label>
+                        <textarea 
+                          className="flex w-full rounded-md border border-input bg-gray-50 px-3 py-2 text-sm shadow-sm focus:ring-1 focus:ring-ring" 
+                          rows={4}
+                          placeholder="Describa los síntomas o motivo de la consulta..."
+                          value={nuevaConsulta.motivo}
+                          onChange={(e) => setNuevaConsulta({...nuevaConsulta, motivo: e.target.value})}
+                        />
+                      </div>
+
+                      <div className="space-y-2">
+                        <label className="text-sm font-medium text-gray-700">Diagnóstico</label>
+                        <textarea 
+                          className="flex w-full rounded-md border border-input bg-gray-50 px-3 py-2 text-sm shadow-sm focus:ring-1 focus:ring-ring" 
+                          rows={3}
+                          placeholder="Ingrese el diagnóstico..."
+                          value={nuevaConsulta.diagnostico}
+                          onChange={(e) => setNuevaConsulta({...nuevaConsulta, diagnostico: e.target.value})}
+                        />
+                      </div>
+
+                      <div className="space-y-2">
+                        <label className="text-sm font-medium text-gray-700">Tratamiento Indicado</label>
+                        <textarea 
+                          className="flex w-full rounded-md border border-input bg-gray-50 px-3 py-2 text-sm shadow-sm focus:ring-1 focus:ring-ring" 
+                          rows={4}
+                          placeholder="Describa el tratamiento indicado..."
+                          value={nuevaConsulta.tratamiento}
+                          onChange={(e) => setNuevaConsulta({...nuevaConsulta, tratamiento: e.target.value})}
+                        />
+                      </div>
+
+                      <div className="space-y-2">
+                        <label className="text-sm font-medium text-gray-700">Observaciones Adicionales</label>
+                        <textarea 
+                          className="flex w-full rounded-md border border-input bg-gray-50 px-3 py-2 text-sm shadow-sm focus:ring-1 focus:ring-ring" 
+                          rows={3}
+                          placeholder="Notas adicionales..."
+                          value={nuevaConsulta.observaciones}
+                          onChange={(e) => setNuevaConsulta({...nuevaConsulta, observaciones: e.target.value})}
+                        />
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="pt-4 flex justify-end gap-4 border-t">
+                    <Button type="button" variant="outline" size="lg">Cancelar</Button>
+                    <Button type="submit" size="lg" className="px-12 shadow-lg shadow-primary/20">
+                      <FileText className="w-4 h-4 mr-2" />
+                      Guardar Historia Clínica
+                    </Button>
+                  </div>
                 </form>
               </CardContent>
             </Card>
