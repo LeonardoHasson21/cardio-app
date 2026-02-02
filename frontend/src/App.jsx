@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react'
 import axios from 'axios'
 import { cn } from "@/lib/utils"
-import { Sidebar } from "@/components/sidebar" 
+import { Sidebar } from "@/components/sidebar"
+import { DashboardContent } from "@/components/dashboard-context"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
@@ -46,6 +47,20 @@ export default function App() {
   const [sidebarOpen, setSidebarOpen] = useState(false)
   const [searchTerm, setSearchTerm] = useState("")
   const [dashboardData, setDashboardData] = useState(null);
+  
+  // Search Advanced
+  const [searchParams, setSearchParams] = useState({ 
+    query: '', 
+    desde: '', 
+    hasta: '',
+    filterType: 'todos'
+  });
+  const [resultadosBusqueda, setResultadosBusqueda] = useState(null);
+  const [busquedaRealizada, setBusquedaRealizada] = useState(false);
+  
+  // Historias Clínicas (Todas las consultas)
+  const [todasLasConsultas, setTodasLasConsultas] = useState([]);
+  const [filtrosConsultas, setFiltrosConsultas] = useState({ estado: 'todas' });
 
   const getConfig = () => ({ headers: { Authorization: `Bearer ${token}` } });
 
@@ -53,6 +68,7 @@ export default function App() {
     if (token && role === 'MEDICO') {
       cargarPacientes();
       cargarDashboard();
+      cargarTodasLasConsultas();
       setActiveTab("dashboard");
     }
     if (token && role === 'ADMIN') {
@@ -86,6 +102,13 @@ export default function App() {
     } catch (error) { console.error("Error cargando dashboard", error); }
   }
 
+  const cargarTodasLasConsultas = async () => {
+    try {
+        const res = await axios.get(`${API_URL}/consultas`, getConfig());
+        setTodasLasConsultas(res.data || []);
+    } catch (error) { console.error("Error cargando consultas", error); }
+  }
+
   const guardarPaciente = async (e) => {
     e.preventDefault();
     try { 
@@ -111,6 +134,27 @@ export default function App() {
     setSearchTerm(termino);
     if (termino.length === 0) { cargarPacientes(); return; }
     try { const res = await axios.get(`${API_URL}/pacientes/buscar?query=${termino}`, getConfig()); setPacientes(res.data); } catch (error) { }
+  }
+
+  const realizarBusquedaAvanzada = async () => {
+    if (!searchParams.query && !searchParams.desde && !searchParams.hasta) {
+      alert("Ingresa al menos un criterio de búsqueda");
+      return;
+    }
+    
+    try {
+      let url = `${API_URL}/consultas/buscar?`;
+      if (searchParams.query) url += `query=${searchParams.query}&`;
+      if (searchParams.desde) url += `desde=${searchParams.desde}&`;
+      if (searchParams.hasta) url += `hasta=${searchParams.hasta}&`;
+      
+      const res = await axios.get(url, getConfig());
+      setResultadosBusqueda(res.data);
+      setBusquedaRealizada(true);
+    } catch (error) {
+      console.error("Error en búsqueda", error);
+      alert("Error al realizar búsqueda");
+    }
   }
 
   const abrirHistoria = async (paciente) => {
@@ -160,7 +204,7 @@ export default function App() {
 
       <main className="flex-1 h-screen overflow-y-auto print:overflow-visible print:h-auto">
         <header className="sticky top-0 z-30 bg-white/80 backdrop-blur-md border-b px-6 h-16 flex items-center justify-between print:hidden">
-          <div className="flex items-center gap-4"><Button variant="ghost" size="icon" className="lg:hidden" onClick={() => setSidebarOpen(true)}><Menu className="w-5 h-5" /></Button><h2 className="text-lg font-semibold text-gray-800">{activeTab === 'pacientes' && 'Listado de Pacientes'}{activeTab === 'nuevo_paciente' && 'Nueva Historia Clínica'}{activeTab === 'admin_usuarios' && 'Panel de Administración'}{activeTab === 'dashboard' && 'Panel de Control'}</h2></div>
+          <div className="flex items-center gap-4"><Button variant="ghost" size="icon" className="lg:hidden" onClick={() => setSidebarOpen(true)}><Menu className="w-5 h-5" /></Button><h2 className="text-lg font-semibold text-gray-800">{activeTab === 'pacientes' && 'Listado de Pacientes'}{activeTab === 'nuevo_paciente' && 'Nueva Historia Clínica'}{activeTab === 'admin_usuarios' && 'Panel de Administración'}{activeTab === 'dashboard' && 'Panel de Control'}{activeTab === 'historias_clinicas' && 'Historias Clínicas'}{activeTab === 'search' && 'Búsqueda Avanzada'}</h2></div>
           {activeTab === 'pacientes' && (<div className="hidden md:flex relative w-64"><Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" /><Input placeholder="Buscar paciente..." className="pl-9 h-9 rounded-full" onChange={(e) => handleBusqueda(e.target.value)} /></div>)}
         </header>
 
@@ -168,33 +212,100 @@ export default function App() {
           
           {/* DASHBOARD */}
           {activeTab === 'dashboard' && (
-            <div className="space-y-8 animate-in fade-in zoom-in-95 duration-500 print:hidden">
-              <div><h2 className="text-2xl font-bold text-gray-800">Panel de Control</h2><p className="text-muted-foreground">Resumen de actividad en tiempo real</p></div>
-              {!dashboardData ? (
-                 <div className="grid grid-cols-1 md:grid-cols-4 gap-6">{[1,2,3,4].map(i => <div key={i} className="h-32 bg-gray-200/50 rounded-xl animate-pulse"></div>)}</div>
-              ) : (
-                <>
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                    <Card className="border-none shadow-sm hover:shadow-md"><CardContent className="p-6 flex justify-between"><div><p className="text-sm font-medium text-gray-500">Pacientes Activos</p><h3 className="text-3xl font-bold text-gray-800 mt-2">{dashboardData.totalPacientes}</h3></div><div className="p-2 rounded-lg bg-cyan-50 text-cyan-600"><Users className="w-5 h-5"/></div></CardContent></Card>
-                    <Card className="border-none shadow-sm hover:shadow-md"><CardContent className="p-6 flex justify-between"><div><p className="text-sm font-medium text-gray-500">Total Consultas</p><h3 className="text-3xl font-bold text-gray-800 mt-2">{dashboardData.totalConsultas}</h3></div><div className="p-2 rounded-lg bg-blue-50 text-blue-600"><FileText className="w-5 h-5"/></div></CardContent></Card>
-                    <Card className="border-none shadow-sm hover:shadow-md"><CardContent className="p-6 flex justify-between"><div><p className="text-sm font-medium text-gray-500">Citas Hoy</p><h3 className="text-3xl font-bold text-gray-800 mt-2">{dashboardData.consultasHoy}</h3></div><div className="p-2 rounded-lg bg-purple-50 text-purple-600"><Calendar className="w-5 h-5"/></div></CardContent></Card>
-                    <Card className="border-none shadow-sm hover:shadow-md"><CardContent className="p-6 flex justify-between"><div><p className="text-sm font-medium text-gray-500">Este Mes</p><h3 className="text-3xl font-bold text-gray-800 mt-2">{dashboardData.consultasMes}</h3></div><div className="p-2 rounded-lg bg-emerald-50 text-emerald-600"><TrendingUp className="w-5 h-5"/></div></CardContent></Card>
-                  </div>
-                  <Card className="border-none shadow-sm overflow-hidden bg-white">
-                    <CardHeader className="bg-white border-b border-gray-100 px-6 py-5"><CardTitle className="text-lg font-bold text-gray-800 flex items-center gap-2"><Clock className="w-5 h-5 text-gray-400"/> Últimas Consultas (Clic para ver PDF)</CardTitle></CardHeader>
-                    <CardContent className="p-0"><div className="overflow-x-auto"><table className="w-full text-sm text-left"><thead className="bg-gray-50/50 text-gray-500 font-medium border-b border-gray-100"><tr><th className="px-6 py-4">ID</th><th className="px-6 py-4">PACIENTE</th><th className="px-6 py-4">FECHA</th><th className="px-6 py-4">TIPO</th><th className="px-6 py-4">ESTADO</th></tr></thead><tbody className="divide-y divide-gray-100 bg-white">
-                            {dashboardData.ultimasConsultas?.map((c) => (
-                              <tr key={c.id} className="hover:bg-blue-50/50 transition-colors cursor-pointer group" onClick={() => setConsultaParaImprimir(c)}>
-                                <td className="px-6 py-4 font-mono text-xs text-primary font-semibold">#{c.id.toString().padStart(6, '0')}</td>
-                                <td className="px-6 py-4 font-medium text-gray-800">{c.paciente ? `${c.paciente.nombre} ${c.paciente.apellido}` : <span className="text-red-400 italic">Sin datos paciente</span>}</td>
-                                <td className="px-6 py-4 text-gray-500">{c.fecha}</td>
-                                <td className="px-6 py-4 text-gray-700">{c.tipo}</td>
-                                <td className="px-6 py-4"><span className={cn("px-2.5 py-1 rounded-full text-xs font-medium border", c.estado === 'En proceso' ? "bg-blue-50 text-blue-700 border-blue-100" : c.estado === 'Pendiente' ? "bg-amber-50 text-amber-700 border-amber-100" : "bg-emerald-50 text-emerald-700 border-emerald-100")}>{c.estado}</span></td>
-                              </tr>
-                            ))}</tbody></table></div></CardContent>
-                  </Card>
-                </>
-              )}
+            <div className="animate-in fade-in zoom-in-95 duration-500 print:hidden">
+              <DashboardContent 
+                dashboardData={dashboardData} 
+                onConsultaClick={(consulta) => setConsultaParaImprimir(consulta)}
+              />
+            </div>
+          )}
+
+          {/* HISTORIAS CLÍNICAS */}
+          {activeTab === 'historias_clinicas' && (
+            <div className="space-y-6 print:hidden">
+              <div className="flex flex-col md:flex-row gap-4 items-center justify-between">
+                <div>
+                  <h2 className="text-2xl font-bold text-gray-800">Historias Clínicas</h2>
+                  <p className="text-gray-500 mt-1">Total de registros: {todasLasConsultas.length}</p>
+                </div>
+                <div className="flex gap-2">
+                  <Button 
+                    variant={filtrosConsultas.estado === 'todas' ? 'default' : 'outline'}
+                    onClick={() => setFiltrosConsultas({...filtrosConsultas, estado: 'todas'})}
+                  >
+                    Todas
+                  </Button>
+                  <Button 
+                    variant={filtrosConsultas.estado === 'Completada' ? 'default' : 'outline'}
+                    onClick={() => setFiltrosConsultas({...filtrosConsultas, estado: 'Completada'})}
+                  >
+                    Completadas
+                  </Button>
+                  <Button 
+                    variant={filtrosConsultas.estado === 'En proceso' ? 'default' : 'outline'}
+                    onClick={() => setFiltrosConsultas({...filtrosConsultas, estado: 'En proceso'})}
+                  >
+                    En Proceso
+                  </Button>
+                </div>
+              </div>
+
+              <Card className="border-none shadow-sm overflow-hidden bg-white">
+                <div className="overflow-x-auto">
+                  <table className="w-full text-sm text-left">
+                    <thead className="bg-gray-50/50 text-gray-500 font-medium border-b border-gray-100">
+                      <tr>
+                        <th className="px-6 py-4 text-xs font-semibold uppercase tracking-wider">ID</th>
+                        <th className="px-6 py-4 text-xs font-semibold uppercase tracking-wider">PACIENTE</th>
+                        <th className="px-6 py-4 text-xs font-semibold uppercase tracking-wider">FECHA</th>
+                        <th className="px-6 py-4 text-xs font-semibold uppercase tracking-wider">TIPO</th>
+                        <th className="px-6 py-4 text-xs font-semibold uppercase tracking-wider">DIAGNÓSTICO</th>
+                        <th className="px-6 py-4 text-xs font-semibold uppercase tracking-wider">ESTADO</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-gray-100 bg-white">
+                      {(filtrosConsultas.estado === 'todas' 
+                        ? todasLasConsultas 
+                        : todasLasConsultas.filter(c => c.estado === filtrosConsultas.estado)
+                      ).map((consulta) => (
+                        <tr 
+                          key={consulta.id} 
+                          className="hover:bg-blue-50/50 transition-colors cursor-pointer"
+                          onClick={() => setConsultaParaImprimir(consulta)}
+                        >
+                          <td className="px-6 py-4 font-mono text-xs text-cyan-600 font-semibold">
+                            #{consulta.id.toString().padStart(6, '0')}
+                          </td>
+                          <td className="px-6 py-4 font-medium text-gray-800">
+                            {consulta.paciente ? `${consulta.paciente.nombre} ${consulta.paciente.apellido}` : "Sin datos"}
+                          </td>
+                          <td className="px-6 py-4 text-gray-500">
+                            {consulta.fecha}
+                          </td>
+                          <td className="px-6 py-4 text-gray-700">
+                            {consulta.tipo}
+                          </td>
+                          <td className="px-6 py-4 text-gray-700">
+                            {consulta.diagnostico}
+                          </td>
+                          <td className="px-6 py-4">
+                            <span className={cn(
+                              "inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold border",
+                              consulta.estado === "Completada"
+                                ? "bg-emerald-50 text-emerald-700 border-emerald-100"
+                                : consulta.estado === "En proceso"
+                                  ? "bg-blue-50 text-blue-700 border-blue-100"
+                                  : "bg-amber-50 text-amber-700 border-amber-100"
+                            )}>
+                              {consulta.estado}
+                            </span>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </Card>
             </div>
           )}
 
@@ -227,6 +338,125 @@ export default function App() {
                 </form>
               </CardContent>
             </Card>
+          )}
+
+          {activeTab === 'search' && (
+            <div className="space-y-6 print:hidden max-w-4xl mx-auto">
+              <Card className="border-none shadow-md bg-white">
+                <CardHeader className="border-b bg-gray-50/50 px-8 py-6">
+                  <CardTitle className="flex items-center gap-2">
+                    <Search className="w-5 h-5 text-primary"/>
+                    Criterios de Búsqueda
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="p-8">
+                  <div className="space-y-4">
+                    <div className="relative">
+                      <Search className="absolute left-3 top-3 w-4 h-4 text-gray-400" />
+                      <Input 
+                        placeholder="Buscar por nombre, diagnóstico o palabras clave..." 
+                        className="pl-9 h-11" 
+                        value={searchParams.query}
+                        onChange={(e) => setSearchParams({...searchParams, query: e.target.value})}
+                      />
+                    </div>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div className="space-y-2">
+                        <label className="text-sm font-medium text-gray-700">Desde</label>
+                        <Input 
+                          type="date" 
+                          className="h-10"
+                          value={searchParams.desde}
+                          onChange={(e) => setSearchParams({...searchParams, desde: e.target.value})}
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <label className="text-sm font-medium text-gray-700">Hasta</label>
+                        <Input 
+                          type="date" 
+                          className="h-10"
+                          value={searchParams.hasta}
+                          onChange={(e) => setSearchParams({...searchParams, hasta: e.target.value})}
+                        />
+                      </div>
+                    </div>
+                    <div className="flex justify-end pt-4">
+                      <Button onClick={realizarBusquedaAvanzada} size="lg" className="px-12 shadow-lg shadow-primary/20">
+                        <Search className="w-4 h-4 mr-2" />
+                        Buscar
+                      </Button>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+
+              {busquedaRealizada && (
+                <Card className="border-none shadow-md bg-white">
+                  <CardHeader className="border-b bg-gray-50/50 px-8 py-6">
+                    <CardTitle>
+                      Resultados de Búsqueda ({resultadosBusqueda?.length || 0})
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="p-0">
+                    {resultadosBusqueda && resultadosBusqueda.length > 0 ? (
+                      <div className="overflow-x-auto">
+                        <table className="w-full text-sm text-left">
+                          <thead className="bg-gray-50/50 text-gray-500 font-medium border-b border-gray-100">
+                            <tr>
+                              <th className="px-6 py-4 text-xs font-semibold uppercase">ID</th>
+                              <th className="px-6 py-4 text-xs font-semibold uppercase">PACIENTE</th>
+                              <th className="px-6 py-4 text-xs font-semibold uppercase">FECHA</th>
+                              <th className="px-6 py-4 text-xs font-semibold uppercase">DIAGNÓSTICO</th>
+                              <th className="px-6 py-4 text-xs font-semibold uppercase">ESTADO</th>
+                            </tr>
+                          </thead>
+                          <tbody className="divide-y divide-gray-100 bg-white">
+                            {resultadosBusqueda.map((consulta) => (
+                              <tr 
+                                key={consulta.id} 
+                                className="hover:bg-blue-50/50 transition-colors cursor-pointer"
+                                onClick={() => setConsultaParaImprimir(consulta)}
+                              >
+                                <td className="px-6 py-4 font-mono text-xs text-cyan-600 font-semibold">
+                                  #{consulta.id.toString().padStart(6, '0')}
+                                </td>
+                                <td className="px-6 py-4 font-medium text-gray-800">
+                                  {consulta.paciente ? `${consulta.paciente.nombre} ${consulta.paciente.apellido}` : "Sin datos"}
+                                </td>
+                                <td className="px-6 py-4 text-gray-500">
+                                  {consulta.fecha}
+                                </td>
+                                <td className="px-6 py-4 text-gray-700">
+                                  {consulta.diagnostico}
+                                </td>
+                                <td className="px-6 py-4">
+                                  <span className={cn(
+                                    "inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold border",
+                                    consulta.estado === "Completada"
+                                      ? "bg-emerald-50 text-emerald-700 border-emerald-100"
+                                      : consulta.estado === "En proceso"
+                                        ? "bg-blue-50 text-blue-700 border-blue-100"
+                                        : "bg-amber-50 text-amber-700 border-amber-100"
+                                  )}>
+                                    {consulta.estado}
+                                  </span>
+                                </td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
+                    ) : (
+                      <div className="p-12 text-center">
+                        <Search className="w-12 h-12 text-gray-300 mx-auto mb-4" />
+                        <h3 className="text-lg font-semibold text-gray-700 mb-1">No se encontraron resultados</h3>
+                        <p className="text-gray-500">Intenta con otros criterios de búsqueda</p>
+                      </div>
+                    )}
+                  </CardContent>
+                </Card>
+              )}
+            </div>
           )}
 
           {activeTab === 'admin_usuarios' && (

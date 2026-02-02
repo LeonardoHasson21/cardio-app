@@ -23,7 +23,8 @@ export function Sidebar({ activeSection, onSectionChange, role, cerrarSesion }) 
   const menuItems = role === 'ADMIN' 
     ? [ { id: "admin_usuarios", label: "Gestión Médicos", icon: Users } ]
     : [ 
-        { id: "dashboard", label: "Dashboard", icon: Home }, // Opcional si tienes dashboard
+        { id: "dashboard", label: "Dashboard", icon: Home },
+        { id: "historias_clinicas", label: "Historias Clínicas", icon: FileText },
         { id: "pacientes", label: "Pacientes", icon: Users },
         { id: "nuevo_paciente", label: "Nueva Historia", icon: FolderPlus },
         { id: "search", label: "Buscar", icon: Search },
